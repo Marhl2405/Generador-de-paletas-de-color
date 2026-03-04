@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHROMATICA — Generador de Paletas</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0f;
+  --panel: #141418;
+  --border: #2a2a35;
+  --text: #e8e0d0;
+  --dim: #6a6478;
+  --accent: #ff4d6d;
+  --glow: rgba(255,77,109,0.4);
+  --scan: rgba(255,255,255,0.025);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* CRT scanlines */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--scan) 2px,
+    var(--scan) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Grid bg */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,77,109,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,77,109,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+
+/* ── HEADER ── */
+header {
+  padding: 32px 0 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.8rem, 7vw, 5rem);
+  letter-spacing: 6px;
+  line-height: 1;
+  color: var(--text);
+  text-shadow: 0 0 30px var(--glow), 0 0 60px rgba(255,77,109,0.15);
+  position: relative;
+}
+.logo::after {
+  content: 'CHROMATICA';
+  position: absolute;
+  left: 2px; top: 2px;
+  color: #00ffe5;
+  opacity: 0.25;
+  z-index: -1;
+  animation: glitch 4s infinite;
+}
+@keyframes glitch {
+  0%,90%,100%{transform:none;opacity:0.25}
+  92%{transform:translate(-3px,1px);opacity:0.4}
+  94%{transform:translate(3px,-1px);opacity:0.2}
+  96%{transform:translate(-2px,2px);opacity:0.35}
+}
+.logo-sub {
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  color: var(--dim);
+  letter-spacing: 3px;
+  margin-top: 4px;
+}
+
+/* ── CONTROLS ── */
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.type-select {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  padding: 10px 14px;
+  border-radius: 0;
+  cursor: pointer;
+  outline: none;
+  letter-spacing: 1px;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236a6478'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+.type-select:hover, .type-select:focus { border-color: var(--accent); }
+
+.btn {
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  padding: 10px 22px;
+  border: 1px solid;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+.btn-gen {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d0d0f;
+  box-shadow: 0 0 20px var(--glow);
+}
+.btn-gen:hover { background: #ff6b85; box-shadow: 0 0 35px var(--glow); transform: translateY(-1px); }
+.btn-gen:active { transform: translateY(1px); }
+
+.btn-lock {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--dim);
+}
+.btn-lock:hover { border-color: #00ffe5; color: #00ffe5; }
+
+/* ── PALETTE DISPLAY ── */
+.palette-section { margin-bottom: 40px; }
+
+.palette-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.palette-type-tag {
+  font-family: 'VT323', monospace;
+  font-size: 1.05rem;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.palette-desc {
+  font-size: 0.72rem;
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+
+.swatches {
+  display: flex;
+  height: 200px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+}
+.swatch {
+  flex: 1;
+  position: relative;
+  cursor: pointer;
+  transition: flex 0.35s cubic-bezier(0.23,1,0.32,1);
+  overflow: hidden;
+}
+.swatch:hover { flex: 2.5; }
+.swatch-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 10px 10px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.swatch:hover .swatch-info { opacity: 1; }
+.swatch-hex {
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+.swatch-label {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.swatch-copy-hint {
+  font-family: 'VT323', monospace;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 1px;
+}
+.swatch-locked {
+  position: absolute;
+  top: 8px; right: 8px;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: #fff;
+}
+.swatch:hover .swatch-locked { opacity: 1; }
+.swatch.is-locked .swatch-locked { opacity: 1; }
+
+/* Copied flash */
+.copy-toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #00ffe5;
+  color: #0d0d0f;
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  padding: 8px 24px;
+  border-radius: 0;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  z-index: 1000;
+}
+.copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── PALETTE GRID (history) ── */
+.history-title {
+  font-family: 'VT323', monospace;
+  font-size: 1.4rem;
+  letter-spacing: 4px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.history-item {
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+  overflow: hidden;
+}
+.history-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+.history-strip { display: flex; height: 60px; }
+.history-strip-swatch { flex: 1; }
+.history-meta {
+  padding: 8px 10px;
+  background: var(--panel);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.history-meta span {
+  font-family: 'VT323', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ── PREVIEW CARD ── */
+.preview-section { margin-top: 40px; }
+.preview-title {
+  font-family: 'VT323', monospace;
+  font-size: 1.4rem;
+  letter-spacing: 4px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media(max-width:600px){ .preview-grid{grid-template-columns:1fr} }
+.preview-card {
+  border: 1px solid var(--border);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+}
+.preview-card h4 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+.preview-card p { font-size: 0.8rem; line-height: 1.6; opacity: 0.85; }
+.preview-card .tag {
+  display: inline-block;
+  padding: 3px 10px;
+  font-family: 'VT323', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  margin-top: 12px;
+}
+.preview-card .dot {
+  width: 40px; height: 40px; border-radius: 50%;
+  position: absolute; bottom: 16px; right: 16px;
+}
+.preview-card .bar {
+  height: 4px; position: absolute; bottom: 0; left: 0; right: 0;
+}
+
+/* ── Keyboard hint ── */
+.kb-hint {
+  text-align: center;
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+  color: var(--dim);
+  letter-spacing: 2px;
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+kbd {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  font-family: 'VT323', monospace;
+  font-size: 0.95rem;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="logo">CHROMATICA</div>
+      <div class="logo-sub">// GENERADOR DE PALETAS RETRO //</div>
+    </div>
+    <div class="controls">
+      <select class="type-select" id="paletteType">
+        <option value="random">★ ALEATORIO</option>
+        <option value="monochromatic">MONOCROMÁTICA</option>
+        <option value="analogous">ANÁLOGA</option>
+        <option value="complementary">COMPLEMENTARIA</option>
+        <option value="split">SPLIT-COMPLEMENTARIA</option>
+        <option value="triadic">TRIADA</option>
+        <option value="tetradic">CUADRADA (TÉTRADA)</option>
+        <option value="square">CUADRADO EXACTO</option>
+        <option value="pastel">PASTEL</option>
+        <option value="neon">NEÓN</option>
+        <option value="earth">TIERRAS</option>
+        <option value="dark">OSCURA / SOMBRÍA</option>
+        <option value="vintage">VINTAGE</option>
+      </select>
+      <button class="btn btn-gen" id="btnGenerate" onclick="generate()">▶ GENERAR</button>
+    </div>
+  </header>
+
+  <div class="kb-hint">
+    <kbd>SPACE</kbd> nueva paleta &nbsp;·&nbsp; <kbd>L</kbd> bloquear color &nbsp;·&nbsp; clic en swatch → copiar HEX
+  </div>
+
+  <!-- Current palette -->
+  <div class="palette-section">
+    <div class="palette-header">
+      <span class="palette-type-tag" id="currentTypeTag">—</span>
+      <span class="palette-desc" id="currentDesc">Genera tu primera paleta</span>
+    </div>
+    <div class="swatches" id="swatchesRow"></div>
+  </div>
+
+  <!-- Preview mockups -->
+  <div class="preview-section">
+    <div class="preview-title">// VISTA PREVIA //</div>
+    <div class="preview-grid" id="previewGrid"></div>
+  </div>
+
+  <!-- History -->
+  <div style="margin-top:40px">
+    <div class="history-title">// HISTORIAL //</div>
+    <div class="history-grid" id="historyGrid">
+      <div style="color:var(--dim);font-family:'VT323',monospace;font-size:1rem;letter-spacing:2px;grid-column:1/-1;padding:20px 0">
+        LAS PALETAS GUARDADAS APARECERÁN AQUÍ...
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="copy-toast" id="toast">HEX COPIADO ✓</div>
+
+<script>
+// ── Color math helpers ──
+function hslToHex(h, s, l) {
+  h = ((h % 360) + 360) % 360;
+  s = Math.max(0, Math.min(100, s));
+  l = Math.max(0, Math.min(100, l));
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(255 * c).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function hexToHsl(hex) {
+  let r = parseInt(hex.slice(1,3),16)/255,
+      g = parseInt(hex.slice(3,5),16)/255,
+      b = parseInt(hex.slice(5,7),16)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h,s,l = (max+min)/2;
+  if(max===min){ h=s=0; }
+  else {
+    const d = max-min;
+    s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){
+      case r: h=((g-b)/d+(g<b?6:0))/6; break;
+      case g: h=((b-r)/d+2)/6; break;
+      case b: h=((r-g)/d+4)/6; break;
+    }
+  }
+  return [Math.round(h*360), Math.round(s*100), Math.round(l*100)];
+}
+
+function rand(min, max) { return min + Math.random() * (max - min); }
+function randInt(min, max) { return Math.floor(rand(min, max+1)); }
+function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+// Contrast color for text on bg
+function contrastColor(hex) {
+  const r = parseInt(hex.slice(1,3),16),
+        g = parseInt(hex.slice(3,5),16),
+        b = parseInt(hex.slice(5,7),16);
+  const lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+  return lum > 0.5 ? '#0d0d0f' : '#f0ece0';
+}
+
+// ── Palette generators ──
+const TYPES = {
+  monochromatic: {
+    label: 'MONOCROMÁTICA',
+    desc: 'Un solo matiz, múltiples luminosidades y saturaciones',
+    gen() {
+      const h = randInt(0,359), s = randInt(40,90);
+      return [20,35,50,65,80].map(l => ({ hex: hslToHex(h, s*(l<40?0.4:1), l), h, s, l }));
+    }
+  },
+  analogous: {
+    label: 'ANÁLOGA',
+    desc: 'Colores adyacentes en el círculo cromático · armonía suave',
+    gen() {
+      const h = randInt(0,359), s = randInt(50,85), l = randInt(40,65);
+      return [-30,-15,0,15,30].map(d => ({ hex: hslToHex(h+d, s, l+randInt(-8,8)) }));
+    }
+  },
+  complementary: {
+    label: 'COMPLEMENTARIA',
+    desc: 'Opuestos en el círculo · máximo contraste y energía',
+    gen() {
+      const h = randInt(0,359), s = randInt(55,85), l = randInt(38,62);
+      const h2 = h + 180;
+      const cols = [
+        hslToHex(h, s, l-15), hslToHex(h, s, l),
+        hslToHex(h, s*0.3, 88),
+        hslToHex(h2, s, l), hslToHex(h2, s, l-15)
+      ];
+      return cols.map(hex => ({ hex }));
+    }
+  },
+  split: {
+    label: 'SPLIT-COMPLEMENTARIA',
+    desc: 'Base + dos adyacentes al complementario · equilibrio dinámico',
+    gen() {
+      const h = randInt(0,359), s = randInt(55,80), l = randInt(40,62);
+      return [
+        hslToHex(h, s, l),
+        hslToHex(h, s*0.6, l+20),
+        hslToHex(h+150, s, l),
+        hslToHex(h+210, s, l),
+        hslToHex(h+180, s*0.4, 85)
+      ].map(hex => ({ hex }));
+    }
+  },
+  triadic: {
+    label: 'TRÍADA',
+    desc: 'Tres colores equidistantes (120°) · vívida y equilibrada',
+    gen() {
+      const h = randInt(0,359), s = randInt(55,85), l = randInt(40,60);
+      return [
+        hslToHex(h, s, l),
+        hslToHex(h, s*0.5, l+22),
+        hslToHex(h+120, s, l),
+        hslToHex(h+240, s, l),
+        hslToHex(h+120, s*0.6, l-12)
+      ].map(hex => ({ hex }));
+    }
+  },
+  tetradic: {
+    label: 'TÉTRADA',
+    desc: 'Cuatro colores formando rectángulo en el círculo',
+    gen() {
+      const h = randInt(0,359), s = randInt(50,80), l = randInt(40,60);
+      return [0,60,180,240].map(d => ({ hex: hslToHex(h+d, s, l+randInt(-8,8)) }))
+        .concat([{ hex: hslToHex(h, s*0.3, 88) }]);
+    }
+  },
+  square: {
+    label: 'CUADRADO EXACTO',
+    desc: 'Cuatro colores separados 90° · riqueza y complejidad',
+    gen() {
+      const h = randInt(0,359), s = randInt(55,82), l = randInt(42,60);
+      return [0,90,180,270].map(d => ({ hex: hslToHex(h+d, s, l) }))
+        .concat([{ hex: hslToHex(h, 20, 92) }]);
+    }
+  },
+  pastel: {
+    label: 'PASTEL',
+    desc: 'Saturación baja, luminosidad alta · suave y soñadora',
+    gen() {
+      const h = randInt(0,359);
+      return [0,60,130,210,290].map(d => ({ hex: hslToHex(h+d, randInt(30,55), randInt(78,92)) }));
+    }
+  },
+  neon: {
+    label: 'NEÓN',
+    desc: 'Saturación máxima sobre oscuro · eléctrica y vibrante',
+    gen() {
+      const h = randInt(0,359);
+      const neons = [0,72,144,216,288].map(d => hslToHex(h+d, 100, randInt(50,65)));
+      neons[2] = hslToHex(h+144, 20, 10);
+      return neons.map(hex => ({ hex }));
+    }
+  },
+  earth: {
+    label: 'TIERRAS',
+    desc: 'Tonos cálidos orgánicos · terracota, ocre, marrón',
+    gen() {
+      const bases = [
+        [20,randInt(50,75),randInt(30,55)],
+        [35,randInt(60,80),randInt(55,75)],
+        [45,randInt(55,75),randInt(60,78)],
+        [15,randInt(40,65),randInt(20,40)],
+        [28,randInt(20,40),randInt(80,92)]
+      ];
+      return bases.map(([h,s,l]) => ({ hex: hslToHex(h+randInt(-5,5), s, l) }));
+    }
+  },
+  dark: {
+    label: 'OSCURA / SOMBRÍA',
+    desc: 'Tonos profundos con acento · dramática y misteriosa',
+    gen() {
+      const h = randInt(0,359), s = randInt(30,70);
+      return [
+        hslToHex(h, s, 8), hslToHex(h, s*0.7, 15),
+        hslToHex(h, s, 25),
+        hslToHex(h+180, randInt(70,100), randInt(55,72)),
+        hslToHex(h, 10, 85)
+      ].map(hex => ({ hex }));
+    }
+  },
+  vintage: {
+    label: 'VINTAGE',
+    desc: 'Saturación media, ligeramente desaturada · nostálgica',
+    gen() {
+      const h = randInt(0,359), s = randInt(25,50), l = randInt(45,72);
+      return [0,40,90,180,260].map(d => ({
+        hex: hslToHex(h+d, s+randInt(-10,10), l+randInt(-15,15))
+      }));
+    }
+  },
+  random: {
+    label: 'ALEATORIA',
+    desc: '¡Sorpresa total! Cualquier tipo de armonía',
+    gen() {
+      const keys = Object.keys(TYPES).filter(k => k !== 'random');
+      const chosen = pick(keys);
+      const result = TYPES[chosen].gen();
+      // Tag for display
+      currentRandomSubtype = TYPES[chosen].label;
+      return result;
+    }
+  }
+};
+
+let currentPalette = []; // [{hex, locked}]
+let history = [];
+let currentRandomSubtype = '';
+let lockedIndex = -1;
+
+function generate() {
+  const type = document.getElementById('paletteType').value;
+  const def = TYPES[type];
+  const newColors = def.gen();
+
+  // Preserve locked swatches
+  if (currentPalette.length === newColors.length) {
+    newColors.forEach((c, i) => {
+      if (currentPalette[i]?.locked) newColors[i] = { ...currentPalette[i] };
+    });
+  }
+
+  currentPalette = newColors.map(c => ({ hex: c.hex, locked: c.locked || false }));
+
+  // Update UI
+  const tag = type === 'random'
+    ? `ALEATORIA · ${currentRandomSubtype}`
+    : def.label;
+  document.getElementById('currentTypeTag').textContent = tag;
+  document.getElementById('currentDesc').textContent = def.desc;
+
+  renderSwatches();
+  renderPreview();
+  saveToHistory(tag);
+}
+
+function renderSwatches() {
+  const row = document.getElementById('swatchesRow');
+  const names = ['BASE', 'TONO 2', 'TONO 3', 'ACENTO', 'NEUTRAL'];
+  row.innerHTML = currentPalette.map((c, i) => {
+    const txt = contrastColor(c.hex);
+    return `
+    <div class="swatch${c.locked ? ' is-locked' : ''}"
+         style="background:${c.hex}"
+         onclick="copySwatch('${c.hex}')"
+         ondblclick="toggleLock(${i})">
+      <div class="swatch-info">
+        <span class="swatch-hex">${c.hex.toUpperCase()}</span>
+        <span class="swatch-label" style="color:rgba(255,255,255,0.6)">${names[i] || 'COLOR ' + (i+1)}</span>
+        <span class="swatch-copy-hint">CLIC COPIAR · DBL BLOQUEAR</span>
+      </div>
+      <span class="swatch-locked">${c.locked ? '🔒' : '🔓'}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleLock(i) {
+  currentPalette[i].locked = !currentPalette[i].locked;
+  renderSwatches();
+}
+
+function copySwatch(hex) {
+  navigator.clipboard.writeText(hex).catch(() => {});
+  const t = document.getElementById('toast');
+  t.textContent = hex.toUpperCase() + ' COPIADO ✓';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function renderPreview() {
+  if (!currentPalette.length) return;
+  const p = currentPalette.map(c => c.hex);
+  const fill = i => p[i] || p[0];
+  const txt = i => contrastColor(fill(i));
+
+  const grid = document.getElementById('previewGrid');
+  grid.innerHTML = `
+    <!-- Card 1: UI card -->
+    <div class="preview-card" style="background:${fill(0)};border-color:${fill(2)}40;color:${txt(0)}">
+      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">SISTEMA · UI</div>
+      <h4 style="color:${fill(3)}">DISEÑO RETRO</h4>
+      <p style="color:${txt(0)};opacity:0.75">Así se verían tus colores en una interfaz. El acento crea jerarquía visual y guía la atención.</p>
+      <span class="tag" style="background:${fill(3)};color:${contrastColor(fill(3))}">ACCIÓN PRIMARIA</span>
+      <div class="dot" style="background:${fill(4)}"></div>
+      <div class="bar" style="background:${fill(2)}"></div>
+    </div>
+
+    <!-- Card 2: Poster -->
+    <div class="preview-card" style="background:${fill(3)};border-color:${fill(0)}40;color:${txt(3)}">
+      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">PÓSTER · EDITORIAL</div>
+      <h4 style="color:${fill(1)};font-size:2.2rem">ARTE Y COLOR</h4>
+      <p style="color:${txt(3)};opacity:0.75">Combinación sobre fondo acento. Ideal para pósters, portadas y piezas con alto impacto visual.</p>
+      <span class="tag" style="background:${fill(0)};color:${contrastColor(fill(0))};border:1px solid ${fill(0)}">VOL. I</span>
+      <div class="dot" style="background:${fill(2)};opacity:0.7"></div>
+      <div class="bar" style="background:${fill(0)}"></div>
+    </div>
+
+    <!-- Card 3: Dark bg -->
+    <div class="preview-card" style="background:${fill(2)};border-color:${fill(3)}40;color:${txt(2)}">
+      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">TIPOGRAFÍA · BODY</div>
+      <h4 style="color:${fill(4)}">LEGIBILIDAD</h4>
+      <p style="color:${txt(2)};opacity:0.8;font-size:0.78rem">Texto corrido sobre el tercer tono. Evalúa si el contraste es suficiente para cuerpos de texto largos y contenido accesible.</p>
+      <div class="bar" style="background:${fill(3)}"></div>
+    </div>
+
+    <!-- Card 4: Gradient / illustration hint -->
+    <div class="preview-card" style="background:linear-gradient(135deg, ${fill(0)}, ${fill(3)});border-color:transparent;color:${txt(0)}">
+      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.7;margin-bottom:8px">GRADIENTE · ILUSTRACIÓN</div>
+      <h4>BASE → ACENTO</h4>
+      <p style="opacity:0.8">Flujo natural entre tus dos colores principales. Útil en fondos, headers e ilustraciones.</p>
+      <span class="tag" style="background:rgba(255,255,255,0.15);color:#fff;margin-top:auto">BLEND MODE</span>
+    </div>
+  `;
+}
+
+function saveToHistory(tag) {
+  history.unshift({ colors: currentPalette.map(c => c.hex), tag });
+  if (history.length > 20) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const grid = document.getElementById('historyGrid');
+  if (!history.length) return;
+  grid.innerHTML = history.map((h, i) => `
+    <div class="history-item" onclick="loadHistory(${i})">
+      <div class="history-strip">
+        ${h.colors.map(c => `<div class="history-strip-swatch" style="background:${c}"></div>`).join('')}
+      </div>
+      <div class="history-meta">
+        <span>${h.tag.split(' · ')[0]}</span>
+        <span style="color:var(--accent)">→</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadHistory(i) {
+  const h = history[i];
+  currentPalette = h.colors.map(hex => ({ hex, locked: false }));
+  document.getElementById('currentTypeTag').textContent = h.tag;
+  renderSwatches();
+  renderPreview();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space') { e.preventDefault(); generate(); }
+});
+
+// Init
+generate();
+</script>
+</body>
+</html>
