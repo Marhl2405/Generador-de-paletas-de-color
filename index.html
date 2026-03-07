@@ -405,6 +405,71 @@ header {
   height: 4px; position: absolute; bottom: 0; left: 0; right: 0;
 }
 
+/* ── LANGUAGE SELECTOR ── */
+.lang-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.lang-lbl {
+  font-family: 'VT323', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin-right: 4px;
+}
+.lang-btn {
+  font-family: 'VT323', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.lang-btn:hover { border-color: var(--text); color: var(--text); }
+.lang-btn.active { border-color: #00ffe5; color: #00ffe5; background: rgba(0,255,229,0.07); }
+
+/* ── STAT TOOLTIP ── */
+.pip-stat {
+  position: relative;
+}
+.pip-stat .stat-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1820;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  padding: 8px 12px;
+  white-space: nowrap;
+  max-width: 220px;
+  white-space: normal;
+  width: 200px;
+  text-align: center;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+.pip-stat .stat-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--border);
+}
+.pip-stat:hover .stat-tooltip { display: block; animation: fadeUp 0.15s ease; }
+.pip-stat-lbl { cursor: help; border-bottom: 1px dashed var(--dim); display: inline-block; }
+
 /* ── TEMPERATURE SELECTOR ── */
 .temp-row {
   display: flex;
@@ -472,7 +537,16 @@ kbd {
       <div class="logo">CHROMATICA</div>
       <div class="logo-sub">// GENERADOR DE PALETAS //</div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+      <div class="lang-row">
+        <span class="lang-lbl" data-i18n="lang">LANG:</span>
+        <button class="lang-btn active" data-lang="es" onclick="setLang('es')">ES</button>
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" data-lang="pt" onclick="setLang('pt')">PT</button>
+        <button class="lang-btn" data-lang="fr" onclick="setLang('fr')">FR</button>
+        <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
+        <button class="lang-btn" data-lang="ja" onclick="setLang('ja')">日本</button>
+      </div>
       <div class="controls">
         <select class="type-select" id="paletteType">
           <option value="random">★ ALEATORIO</option>
@@ -779,8 +853,7 @@ const TYPES = {
       const keys = Object.keys(TYPES).filter(k => k !== 'random');
       const chosen = pick(keys);
       const result = TYPES[chosen].gen();
-      // Tag for display
-      currentRandomSubtype = TYPES[chosen].label;
+      currentRandomSubtype = chosen; // store key, not label
       return result;
     }
   }
@@ -806,53 +879,59 @@ function generate() {
   currentPalette = newColors.map(c => ({ hex: c.hex, locked: c.locked || false }));
 
   const tag = type === 'random'
-    ? `ALEATORIA · ${currentRandomSubtype}`
-    : def.label;
+    ? `${L().types.random?.label || 'RANDOM'} · ${L().types[currentRandomSubtype]?.label || currentRandomSubtype}`
+    : (L().types[type]?.label || def.label);
 
   document.getElementById('currentTypeTag').textContent = tag;
-  document.getElementById('currentDesc').textContent = def.desc;
+  document.getElementById('currentDesc').textContent = L().types[type]?.desc || def.desc;
 
   // Build stats panel
   const hslVals = currentPalette.map(c => hexToHsl(c.hex));
   const avgHue = Math.round(hslVals.reduce((a,v) => a+v[0], 0) / hslVals.length);
   const avgSat = Math.round(hslVals.reduce((a,v) => a+v[1], 0) / hslVals.length);
   const avgLum = Math.round(hslVals.reduce((a,v) => a+v[2], 0) / hslVals.length);
-  const hueRange = Math.max(...hslVals.map(v=>v[0])) - Math.min(...hslVals.map(v=>v[0]));
-  const warmCool = avgHue < 60 || avgHue > 300 ? '🔥 CÁLIDA' : avgHue > 150 && avgHue < 270 ? '❄ FRÍA' : '⚖ NEUTRA';
-  const mood = avgLum > 70 ? 'LUMINOSA' : avgLum < 35 ? 'OSCURA' : avgSat > 70 ? 'SATURADA' : 'BALANCEADA';
+  const warmCool = L().warmCoolFn(avgHue);
+  const mood = L().moodFn(avgLum, avgSat);
 
   const miniDots = currentPalette.map(c =>
     `<div class="pip-swatch-dot" style="background:${c.hex}" title="${getColorName(c.hex)}"></div>`
   ).join('');
 
+  const l = L();
   document.getElementById('paletteStats').innerHTML = `
     <div class="pip-stat">
       <span class="pip-stat-val">${currentPalette.length}</span>
-      <span class="pip-stat-lbl">Colores</span>
+      <span class="pip-stat-lbl">${l.statColors}</span>
+      <div class="stat-tooltip">${l.ttColors}</div>
     </div>
     <div class="pip-stat">
       <span class="pip-stat-val">${avgHue}°</span>
-      <span class="pip-stat-lbl">Matiz base</span>
+      <span class="pip-stat-lbl">${l.statHue}</span>
+      <div class="stat-tooltip">${l.ttHue}</div>
     </div>
     <div class="pip-stat">
       <span class="pip-stat-val">${avgSat}%</span>
-      <span class="pip-stat-lbl">Saturación</span>
+      <span class="pip-stat-lbl">${l.statSat}</span>
+      <div class="stat-tooltip">${l.ttSat}</div>
     </div>
     <div class="pip-stat">
       <span class="pip-stat-val">${avgLum}%</span>
-      <span class="pip-stat-lbl">Luminosidad</span>
+      <span class="pip-stat-lbl">${l.statLum}</span>
+      <div class="stat-tooltip">${l.ttLum}</div>
     </div>
     <div class="pip-stat">
-      <span class="pip-stat-val" style="font-size:0.85rem">${warmCool}</span>
-      <span class="pip-stat-lbl">Temperatura</span>
+      <span class="pip-stat-val" style="font-size:0.82rem">${warmCool}</span>
+      <span class="pip-stat-lbl">${l.statTemp}</span>
+      <div class="stat-tooltip">${l.ttTemp}</div>
     </div>
     <div class="pip-stat">
-      <span class="pip-stat-val" style="font-size:0.85rem;color:var(--accent)">${mood}</span>
-      <span class="pip-stat-lbl">Mood</span>
+      <span class="pip-stat-val" style="font-size:0.82rem;color:var(--accent)">${mood}</span>
+      <span class="pip-stat-lbl">${l.statMood}</span>
+      <div class="stat-tooltip">${l.ttMood}</div>
     </div>
     <div class="pip-stat">
       <div class="pip-swatches-mini">${miniDots}</div>
-      <span class="pip-stat-lbl">Muestra</span>
+      <span class="pip-stat-lbl">${l.statSample}</span>
     </div>
   `;
 
@@ -868,11 +947,11 @@ function generate() {
 
 function renderSwatches() {
   const row = document.getElementById('swatchesRow');
-  const names = ['BASE', 'TONO 2', 'TONO 3', 'ACENTO', 'NEUTRAL'];
+  const names = L().swatchNames || ['BASE','TONE 2','TONE 3','ACCENT','NEUTRAL'];
   row.innerHTML = currentPalette.map((c, i) => {
     const rgb = hexToRgb(c.hex);
     const colorName = getColorName(c.hex);
-    const [h, s, l] = hexToHsl(c.hex);
+    const [h, s, lv] = hexToHsl(c.hex);
     return `
     <div class="swatch${c.locked ? ' is-locked' : ''}"
          style="background:${c.hex}"
@@ -882,8 +961,8 @@ function renderSwatches() {
         <span class="swatch-color-name">${colorName}</span>
         <span class="swatch-hex">${c.hex.toUpperCase()}</span>
         <span class="swatch-rgb">${rgb.str}</span>
-        <span class="swatch-hsl">hsl(${h}°, ${s}%, ${l}%)</span>
-        <span class="swatch-label">${names[i] || 'COLOR ' + (i+1)} · CLIC COPIAR · DBL BLOQUEAR</span>
+        <span class="swatch-hsl">hsl(${h}°, ${s}%, ${lv}%)</span>
+        <span class="swatch-label">${names[i] || 'COLOR ' + (i+1)} · ${L().swatchHint}</span>
       </div>
       <span class="swatch-locked">${c.locked ? '🔒' : '🔓'}</span>
     </div>`;
@@ -897,10 +976,10 @@ function toggleLock(i) {
 
 function copySwatch(hex) {
   navigator.clipboard.writeText(hex).catch(() => {});
-  const t = document.getElementById('toast');
-  t.textContent = hex.toUpperCase() + ' COPIADO ✓';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1800);
+  const toast = document.getElementById('toast');
+  toast.textContent = hex.toUpperCase() + ' — ' + (L().toastCopied || 'COPIED ✓');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1800);
 }
 
 function renderPreview() {
@@ -1254,6 +1333,257 @@ function updateBackground() {
 
 window.addEventListener('resize', updateBackground);
 
+// ── i18n ──
+let currentLang = 'es';
+
+const I18N = {
+  es: {
+    subtitle: '// GENERADOR DE PALETAS //',
+    generate: '▶ GENERAR', download: '⬇ PNG', temp: 'TEMP:',
+    tempAny: '★ LIBRE', tempWarm: '🔥 CÁLIDA', tempCold: '❄ FRÍA', tempNeut: '⚖ NEUTRA', tempDark: '🌑 OSCURA',
+    kbHint: '<kbd>SPACE</kbd> nueva paleta &nbsp;·&nbsp; clic en swatch → copiar HEX &nbsp;·&nbsp; doble clic → bloquear',
+    previewTitle: '// VISTA PREVIA //', historyTitle: '// HISTORIAL //',
+    historyEmpty: 'LAS PALETAS GUARDADAS APARECERÁN AQUÍ...',
+    statColors:'Colores', statHue:'Matiz base', statSat:'Saturación', statLum:'Luminosidad', statTemp:'Temperatura', statMood:'Mood', statSample:'Muestra',
+    ttColors: 'Número de colores en la paleta actual.',
+    ttHue: 'Ángulo promedio en el círculo cromático (0–360°). Determina la familia de color dominante: rojo, amarillo, verde, azul, púrpura…',
+    ttSat: 'Intensidad del color promedio. 0% es gris puro sin color; 100% es color puro y muy vívido. Alta saturación = más impacto visual.',
+    ttLum: 'Claridad promedio de los colores. 0% = negro absoluto · 50% = color pleno · 100% = blanco puro.',
+    ttTemp: 'Indica si la paleta tiende a tonos cálidos (rojos, naranjas, amarillos) o fríos (azules, verdes, violetas). Afecta la emoción del diseño.',
+    ttMood: 'Carácter emocional general. Se calcula a partir de la luminosidad y saturación combinadas de todos los colores.',
+    initialDesc: 'Genera tu primera paleta', selectRandom: '★ ALEATORIO',
+    swatchNames: ['BASE','TONO 2','TONO 3','ACENTO','NEUTRAL'],
+    swatchHint: 'CLIC COPIAR · DBL BLOQUEAR',
+    warmCoolFn: h => h<60||h>300 ? '🔥 CÁLIDA' : h>150&&h<270 ? '❄ FRÍA' : '⚖ NEUTRA',
+    moodFn: (l,s) => l>70?'LUMINOSA':l<35?'OSCURA':s>70?'SATURADA':'BALANCEADA',
+    toastCopied:'HEX COPIADO ✓', toastPng:'PNG DESCARGADO ✓',
+    types:{
+      monochromatic:{label:'MONOCROMÁTICA',    desc:'Un solo matiz, múltiples luminosidades y saturaciones'},
+      analogous:    {label:'ANÁLOGA',           desc:'Colores adyacentes en el círculo cromático · armonía suave'},
+      complementary:{label:'COMPLEMENTARIA',   desc:'Opuestos en el círculo · máximo contraste y energía'},
+      split:        {label:'SPLIT-COMPLEMENTARIA',desc:'Base + dos adyacentes al complementario · equilibrio dinámico'},
+      triadic:      {label:'TRÍADA',            desc:'Tres colores equidistantes (120°) · vívida y equilibrada'},
+      tetradic:     {label:'TÉTRADA',           desc:'Cuatro colores formando rectángulo en el círculo'},
+      square:       {label:'CUADRADO EXACTO',  desc:'Cuatro colores separados 90° · riqueza y complejidad'},
+      pastel:       {label:'PASTEL',            desc:'Saturación baja, luminosidad alta · suave y soñadora'},
+      neon:         {label:'NEÓN',              desc:'Saturación máxima sobre oscuro · eléctrica y vibrante'},
+      earth:        {label:'TIERRAS',           desc:'Tonos cálidos orgánicos · terracota, ocre, marrón'},
+      dark:         {label:'OSCURA / SOMBRÍA',  desc:'Tonos profundos con acento · dramática y misteriosa'},
+      vintage:      {label:'VINTAGE',           desc:'Saturación media, ligeramente desaturada · nostálgica'},
+      random:       {label:'ALEATORIA',         desc:'¡Sorpresa total! Cualquier tipo de armonía'},
+    }
+  },
+  en: {
+    subtitle: '// PALETTE GENERATOR //',
+    generate: '▶ GENERATE', download: '⬇ PNG', temp: 'TEMP:',
+    tempAny: '★ FREE', tempWarm: '🔥 WARM', tempCold: '❄ COOL', tempNeut: '⚖ NEUTRAL', tempDark: '🌑 DARK',
+    kbHint: '<kbd>SPACE</kbd> new palette &nbsp;·&nbsp; click swatch → copy HEX &nbsp;·&nbsp; double click → lock',
+    previewTitle: '// PREVIEW //', historyTitle: '// HISTORY //',
+    historyEmpty: 'SAVED PALETTES WILL APPEAR HERE...',
+    statColors:'Colors', statHue:'Base Hue', statSat:'Saturation', statLum:'Luminosity', statTemp:'Temperature', statMood:'Mood', statSample:'Sample',
+    ttColors: 'Number of colors in the current palette.',
+    ttHue: 'Average angle on the color wheel (0–360°). Determines the dominant color family: red, yellow, green, blue, purple…',
+    ttSat: 'Average color intensity. 0% is pure gray; 100% is pure vivid color. High saturation = more visual impact.',
+    ttLum: 'Average lightness of the colors. 0% = pure black · 50% = full color · 100% = pure white.',
+    ttTemp: 'Indicates whether the palette leans warm (reds, oranges, yellows) or cool (blues, greens, purples). Affects the emotion of the design.',
+    ttMood: 'Overall emotional character. Calculated from the combined lightness and saturation of all colors.',
+    initialDesc: 'Generate your first palette', selectRandom: '★ RANDOM',
+    swatchNames: ['BASE','TONE 2','TONE 3','ACCENT','NEUTRAL'],
+    swatchHint: 'CLICK COPY · DBL LOCK',
+    warmCoolFn: h => h<60||h>300?'🔥 WARM':h>150&&h<270?'❄ COOL':'⚖ NEUTRAL',
+    moodFn: (l,s) => l>70?'BRIGHT':l<35?'DARK':s>70?'SATURATED':'BALANCED',
+    toastCopied:'HEX COPIED ✓', toastPng:'PNG DOWNLOADED ✓',
+    types:{
+      monochromatic:{label:'MONOCHROMATIC',    desc:'Single hue, multiple lightness and saturation levels'},
+      analogous:    {label:'ANALOGOUS',        desc:'Adjacent colors on the color wheel · soft harmony'},
+      complementary:{label:'COMPLEMENTARY',   desc:'Opposite colors · maximum contrast and energy'},
+      split:        {label:'SPLIT-COMPLEMENTARY',desc:'Base + two adjacent to complement · dynamic balance'},
+      triadic:      {label:'TRIADIC',          desc:'Three equidistant colors (120°) · vivid and balanced'},
+      tetradic:     {label:'TETRADIC',         desc:'Four colors forming a rectangle on the wheel'},
+      square:       {label:'EXACT SQUARE',    desc:'Four colors 90° apart · richness and complexity'},
+      pastel:       {label:'PASTEL',           desc:'Low saturation, high lightness · soft and dreamy'},
+      neon:         {label:'NEON',             desc:'Max saturation on dark · electric and vibrant'},
+      earth:        {label:'EARTH TONES',      desc:'Warm organic tones · terracotta, ochre, brown'},
+      dark:         {label:'DARK / MOODY',     desc:'Deep tones with accent · dramatic and mysterious'},
+      vintage:      {label:'VINTAGE',          desc:'Medium saturation, slightly desaturated · nostalgic'},
+      random:       {label:'RANDOM',           desc:'Total surprise! Any type of harmony'},
+    }
+  },
+  pt: {
+    subtitle: '// GERADOR DE PALETAS //',
+    generate: '▶ GERAR', download: '⬇ PNG', temp: 'TEMP:',
+    tempAny: '★ LIVRE', tempWarm: '🔥 QUENTE', tempCold: '❄ FRIA', tempNeut: '⚖ NEUTRA', tempDark: '🌑 ESCURA',
+    kbHint: '<kbd>SPACE</kbd> nova paleta &nbsp;·&nbsp; clique → copiar HEX &nbsp;·&nbsp; duplo clique → bloquear',
+    previewTitle: '// VISUALIZAÇÃO //', historyTitle: '// HISTÓRICO //',
+    historyEmpty: 'AS PALETAS SALVAS APARECERÃO AQUI...',
+    statColors:'Cores', statHue:'Matiz base', statSat:'Saturação', statLum:'Luminosidade', statTemp:'Temperatura', statMood:'Mood', statSample:'Amostra',
+    ttColors: 'Número de cores na paleta atual.',
+    ttHue: 'Ângulo médio na roda de cores (0–360°). Determina a família de cor dominante: vermelho, amarelo, verde, azul, roxo…',
+    ttSat: 'Intensidade média da cor. 0% é cinza puro; 100% é cor pura e viva. Alta saturação = mais impacto visual.',
+    ttLum: 'Clareza média das cores. 0% = preto puro · 50% = cor plena · 100% = branco puro.',
+    ttTemp: 'Indica se a paleta tende a tons quentes (vermelhos, laranjas) ou frios (azuis, verdes). Afeta a emoção do design.',
+    ttMood: 'Caráter emocional geral, calculado a partir da luminosidade e saturação combinadas.',
+    initialDesc: 'Gere sua primeira paleta', selectRandom: '★ ALEATÓRIO',
+    swatchNames: ['BASE','TOM 2','TOM 3','ACENTO','NEUTRO'],
+    swatchHint: 'CLIQUE COPIAR · DBL BLOQUEAR',
+    warmCoolFn: h => h<60||h>300?'🔥 QUENTE':h>150&&h<270?'❄ FRIA':'⚖ NEUTRA',
+    moodFn: (l,s) => l>70?'LUMINOSA':l<35?'ESCURA':s>70?'SATURADA':'EQUILIBRADA',
+    toastCopied:'HEX COPIADO ✓', toastPng:'PNG BAIXADO ✓',
+    types:{
+      monochromatic:{label:'MONOCROMÁTICA',    desc:'Um único matiz, múltiplas luminosidades e saturações'},
+      analogous:    {label:'ANÁLOGA',           desc:'Cores adjacentes na roda · harmonia suave'},
+      complementary:{label:'COMPLEMENTAR',     desc:'Opostos na roda · máximo contraste e energia'},
+      split:        {label:'SPLIT-COMPLEMENTAR',desc:'Base + dois adjacentes ao complementar'},
+      triadic:      {label:'TRIÁDICA',          desc:'Três cores equidistantes (120°) · vívida e equilibrada'},
+      tetradic:     {label:'TÉTRADE',           desc:'Quatro cores formando retângulo na roda'},
+      square:       {label:'QUADRADO EXATO',   desc:'Quatro cores separadas 90° · riqueza e complexidade'},
+      pastel:       {label:'PASTEL',            desc:'Baixa saturação, alta luminosidade · suave e sonhadora'},
+      neon:         {label:'NEON',              desc:'Saturação máxima sobre escuro · elétrica e vibrante'},
+      earth:        {label:'TONS DE TERRA',     desc:'Tons orgânicos quentes · terracota, ocre, marrom'},
+      dark:         {label:'ESCURA / SOMBRIA',  desc:'Tons profundos com acento · dramática e misteriosa'},
+      vintage:      {label:'VINTAGE',           desc:'Saturação média, levemente dessaturada · nostálgica'},
+      random:       {label:'ALEATÓRIO',         desc:'Surpresa total! Qualquer tipo de harmonia'},
+    }
+  },
+  fr: {
+    subtitle: '// GÉNÉRATEUR DE PALETTES //',
+    generate: '▶ GÉNÉRER', download: '⬇ PNG', temp: 'TEMP:',
+    tempAny: '★ LIBRE', tempWarm: '🔥 CHAUDE', tempCold: '❄ FROIDE', tempNeut: '⚖ NEUTRE', tempDark: '🌑 SOMBRE',
+    kbHint: '<kbd>SPACE</kbd> nouvelle palette &nbsp;·&nbsp; clic → copier HEX &nbsp;·&nbsp; double clic → verrouiller',
+    previewTitle: '// APERÇU //', historyTitle: '// HISTORIQUE //',
+    historyEmpty: 'LES PALETTES SAUVEGARDÉES APPARAÎTRONT ICI...',
+    statColors:'Couleurs', statHue:'Teinte de base', statSat:'Saturation', statLum:'Luminosité', statTemp:'Température', statMood:'Ambiance', statSample:'Aperçu',
+    ttColors: 'Nombre de couleurs dans la palette actuelle.',
+    ttHue: 'Angle moyen sur la roue chromatique (0–360°). Détermine la famille de couleurs dominante.',
+    ttSat: 'Intensité moyenne de la couleur. 0% = gris pur · 100% = couleur vive et pure.',
+    ttLum: 'Clarté moyenne. 0% = noir · 50% = couleur pleine · 100% = blanc.',
+    ttTemp: 'Indique si la palette tend vers des tons chauds (rouges/oranges) ou froids (bleus/verts).',
+    ttMood: 'Caractère émotionnel calculé à partir de la luminosité et saturation combinées.',
+    initialDesc: 'Générez votre première palette', selectRandom: '★ ALÉATOIRE',
+    swatchNames: ['BASE','TON 2','TON 3','ACCENT','NEUTRE'],
+    swatchHint: 'CLIC COPIER · DBL VERROUILLER',
+    warmCoolFn: h => h<60||h>300?'🔥 CHAUDE':h>150&&h<270?'❄ FROIDE':'⚖ NEUTRE',
+    moodFn: (l,s) => l>70?'LUMINEUSE':l<35?'SOMBRE':s>70?'SATURÉE':'ÉQUILIBRÉE',
+    toastCopied:'HEX COPIÉ ✓', toastPng:'PNG TÉLÉCHARGÉ ✓',
+    types:{
+      monochromatic:{label:'MONOCHROMATIQUE', desc:'Teinte unique, luminosités et saturations variées'},
+      analogous:    {label:'ANALOGUE',         desc:'Couleurs adjacentes · harmonie douce'},
+      complementary:{label:'COMPLÉMENTAIRE',  desc:'Couleurs opposées · contraste maximal'},
+      split:        {label:'SPLIT-COMPLÉMENTAIRE',desc:'Base + deux adjacents au complémentaire'},
+      triadic:      {label:'TRIADIQUE',        desc:'Trois couleurs équidistantes (120°) · vivante'},
+      tetradic:     {label:'TÉTRADIQUE',       desc:'Quatre couleurs en rectangle sur la roue'},
+      square:       {label:'CARRÉ EXACT',      desc:'Quatre couleurs à 90° · richesse et complexité'},
+      pastel:       {label:'PASTEL',            desc:'Faible saturation, haute luminosité · douce'},
+      neon:         {label:'NÉON',              desc:'Saturation max sur fond sombre · électrique'},
+      earth:        {label:'TONS TERRE',        desc:'Tons organiques chauds · terracotta, ocre'},
+      dark:         {label:'SOMBRE / MYSTÉRIEUX',desc:'Tons profonds avec accent · dramatique'},
+      vintage:      {label:'VINTAGE',           desc:'Saturation moyenne, légèrement désaturée'},
+      random:       {label:'ALÉATOIRE',         desc:'Surprise totale ! Toute harmonie possible'},
+    }
+  },
+  de: {
+    subtitle: '// PALETTEN-GENERATOR //',
+    generate: '▶ GENERIEREN', download: '⬇ PNG', temp: 'TEMP:',
+    tempAny: '★ FREI', tempWarm: '🔥 WARM', tempCold: '❄ KALT', tempNeut: '⚖ NEUTRAL', tempDark: '🌑 DUNKEL',
+    kbHint: '<kbd>SPACE</kbd> neue Palette &nbsp;·&nbsp; Klick → HEX kopieren &nbsp;·&nbsp; Doppelklick → sperren',
+    previewTitle: '// VORSCHAU //', historyTitle: '// VERLAUF //',
+    historyEmpty: 'GESPEICHERTE PALETTEN ERSCHEINEN HIER...',
+    statColors:'Farben', statHue:'Basis-Farbton', statSat:'Sättigung', statLum:'Helligkeit', statTemp:'Temperatur', statMood:'Stimmung', statSample:'Probe',
+    ttColors: 'Anzahl der Farben in der aktuellen Palette.',
+    ttHue: 'Durchschnittlicher Winkel am Farbkreis (0–360°). Bestimmt die dominante Farbfamilie.',
+    ttSat: 'Durchschnittliche Farbintensität. 0% = reines Grau · 100% = lebhafte Farbe.',
+    ttLum: 'Durchschnittliche Helligkeit. 0% = schwarz · 50% = volle Farbe · 100% = weiß.',
+    ttTemp: 'Gibt an ob die Palette zu warmen oder kalten Tönen tendiert. Beeinflusst die Designemotion.',
+    ttMood: 'Emotionaler Charakter basierend auf kombinierter Helligkeit und Sättigung.',
+    initialDesc: 'Generiere deine erste Palette', selectRandom: '★ ZUFÄLLIG',
+    swatchNames: ['BASIS','TON 2','TON 3','AKZENT','NEUTRAL'],
+    swatchHint: 'KLICK KOPIEREN · DBL SPERREN',
+    warmCoolFn: h => h<60||h>300?'🔥 WARM':h>150&&h<270?'❄ KALT':'⚖ NEUTRAL',
+    moodFn: (l,s) => l>70?'HELL':l<35?'DUNKEL':s>70?'GESÄTTIGT':'AUSGEWOGEN',
+    toastCopied:'HEX KOPIERT ✓', toastPng:'PNG HERUNTERGELADEN ✓',
+    types:{
+      monochromatic:{label:'MONOCHROM',       desc:'Ein Farbton, verschiedene Helligkeiten und Sättigungen'},
+      analogous:    {label:'ANALOG',           desc:'Benachbarte Farben · sanfte Harmonie'},
+      complementary:{label:'KOMPLEMENTÄR',    desc:'Gegenüberliegende Farben · maximaler Kontrast'},
+      split:        {label:'SPLIT-KOMPLEMENTÄR',desc:'Basis + zwei neben dem Komplementär'},
+      triadic:      {label:'TRIADISCH',        desc:'Drei gleichabständige Farben (120°) · lebendig'},
+      tetradic:     {label:'TETRADISCH',       desc:'Vier Farben im Rechteck am Farbkreis'},
+      square:       {label:'EXAKTES QUADRAT', desc:'Vier Farben 90° entfernt · Reichtum und Komplexität'},
+      pastel:       {label:'PASTELL',          desc:'Niedrige Sättigung, hohe Helligkeit · sanft'},
+      neon:         {label:'NEON',             desc:'Max. Sättigung auf dunklem Grund · elektrisch'},
+      earth:        {label:'ERDTÖNE',          desc:'Warme organische Töne · Terrakotta, Ocker'},
+      dark:         {label:'DUNKEL / DÜSTER', desc:'Tiefe Töne mit Akzent · dramatisch'},
+      vintage:      {label:'VINTAGE',          desc:'Mittlere Sättigung, leicht entsättigt · nostalgisch'},
+      random:       {label:'ZUFÄLLIG',         desc:'Totale Überraschung! Jede Art von Harmonie'},
+    }
+  },
+  ja: {
+    subtitle: '// パレットジェネレーター //',
+    generate: '▶ 生成', download: '⬇ PNG', temp: '温度:',
+    tempAny: '★ 自由', tempWarm: '🔥 暖色', tempCold: '❄ 寒色', tempNeut: '⚖ 中性', tempDark: '🌑 暗色',
+    kbHint: '<kbd>SPACE</kbd> 新パレット &nbsp;·&nbsp; クリック → HEXコピー &nbsp;·&nbsp; ダブル → 固定',
+    previewTitle: '// プレビュー //', historyTitle: '// 履歴 //',
+    historyEmpty: '保存されたパレットがここに表示されます...',
+    statColors:'色数', statHue:'基本色相', statSat:'彩度', statLum:'明度', statTemp:'温度感', statMood:'ムード', statSample:'サンプル',
+    ttColors: '現在のパレットの色数。',
+    ttHue: 'カラーホイール上の平均角度（0〜360°）。赤・黄・緑・青・紫などの主要色ファミリーを決定します。',
+    ttSat: '色の強さの平均。0%は無彩色（グレー）、100%は最も鮮やかな純色。高いほど視覚的インパクトが強い。',
+    ttLum: '明るさの平均。0%=黒 · 50%=完全な色 · 100%=白。',
+    ttTemp: 'パレットが暖色（赤・橙・黄）か寒色（青・緑）かを示します。デザインの感情に影響します。',
+    ttMood: '全色の明度と彩度を組み合わせた感情的なキャラクター。',
+    initialDesc: '最初のパレットを生成してください', selectRandom: '★ ランダム',
+    swatchNames: ['ベース','トーン2','トーン3','アクセント','ニュートラル'],
+    swatchHint: 'クリックでコピー · ダブルで固定',
+    warmCoolFn: h => h<60||h>300?'🔥 暖色':h>150&&h<270?'❄ 寒色':'⚖ 中性',
+    moodFn: (l,s) => l>70?'明るい':l<35?'暗い':s>70?'鮮やか':'バランス良い',
+    toastCopied:'HEXコピー済み ✓', toastPng:'PNGダウンロード済み ✓',
+    types:{
+      monochromatic:{label:'単色',           desc:'一つの色相、複数の明度と彩度'},
+      analogous:    {label:'類似色',          desc:'ホイール上の隣接色 · 柔らかい調和'},
+      complementary:{label:'補色',            desc:'対向する色 · 最大のコントラスト'},
+      split:        {label:'スプリット補色',   desc:'基本色 + 補色の隣接2色'},
+      triadic:      {label:'三色配色',         desc:'120°間隔の3色 · 鮮やかでバランス良い'},
+      tetradic:     {label:'四色配色',         desc:'ホイール上の長方形を形成する4色'},
+      square:       {label:'正方形配色',       desc:'90°間隔の4色 · 豊かな複雑さ'},
+      pastel:       {label:'パステル',         desc:'低彩度・高明度 · 柔らかく夢のような'},
+      neon:         {label:'ネオン',           desc:'暗背景に最大彩度 · 電気的で鮮やか'},
+      earth:        {label:'アースカラー',     desc:'暖かいオーガニックトーン'},
+      dark:         {label:'暗色',             desc:'深いトーンにアクセント · ドラマチック'},
+      vintage:      {label:'ヴィンテージ',     desc:'中程度の彩度、やや脱色 · ノスタルジック'},
+      random:       {label:'ランダム',         desc:'完全なサプライズ！あらゆるハーモニー'},
+    }
+  }
+};
+
+function L() { return I18N[currentLang] || I18N.es; }
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  applyLangUI();
+  if (currentPalette.length) generate();
+}
+
+function applyLangUI() {
+  const l = L();
+  document.querySelector('.logo-sub').textContent = l.subtitle;
+  document.getElementById('btnGenerate').textContent = l.generate;
+  document.getElementById('btnDownload').textContent = l.download;
+  document.querySelector('.temp-label').textContent = l.temp;
+  document.querySelector('.kb-hint').innerHTML = l.kbHint;
+  document.querySelector('.preview-title').textContent = l.previewTitle;
+  document.querySelector('.history-title').textContent = l.historyTitle;
+  const tempBtns = document.querySelectorAll('.temp-btn');
+  [l.tempAny,l.tempWarm,l.tempCold,l.tempNeut,l.tempDark].forEach((txt,i)=>{ if(tempBtns[i]) tempBtns[i].textContent=txt; });
+  const sel = document.getElementById('paletteType');
+  const keys = ['random','monochromatic','analogous','complementary','split','triadic','tetradic','square','pastel','neon','earth','dark','vintage'];
+  Array.from(sel.options).forEach((opt,i) => {
+    const k = keys[i];
+    opt.textContent = k==='random' ? l.selectRandom : (l.types[k]?.label || opt.textContent);
+  });
+  if (!currentPalette.length) document.getElementById('currentDesc').textContent = l.initialDesc;
+}
+
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'SELECT') return;
@@ -1261,6 +1591,7 @@ document.addEventListener('keydown', e => {
 });
 
 // Init
+applyLangUI();
 generate();
 </script>
 </body>
