@@ -987,43 +987,39 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const fill = i => p[i] || p[0];
   const txt = i => contrastColor(fill(i));
-
+  const l = L();
   const grid = document.getElementById('previewGrid');
   grid.innerHTML = `
-    <!-- Card 1: UI card -->
     <div class="preview-card" style="background:${fill(0)};border-color:${fill(2)}40;color:${txt(0)}">
-      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">SISTEMA · UI</div>
-      <h4 style="color:${fill(3)}">DISEÑO RETRO</h4>
-      <p style="color:${txt(0)};opacity:0.75">Así se verían tus colores en una interfaz. El acento crea jerarquía visual y guía la atención.</p>
-      <span class="tag" style="background:${fill(3)};color:${contrastColor(fill(3))}">ACCIÓN PRIMARIA</span>
+      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">${l.prevLabel1}</div>
+      <h4 style="color:${fill(3)}">${l.prevTitle1}</h4>
+      <p style="color:${txt(0)};opacity:0.75">${l.prevDesc1}</p>
+      <span class="tag" style="background:${fill(3)};color:${contrastColor(fill(3))}">${l.prevBtn1}</span>
       <div class="dot" style="background:${fill(4)}"></div>
       <div class="bar" style="background:${fill(2)}"></div>
     </div>
 
-    <!-- Card 2: Poster -->
     <div class="preview-card" style="background:${fill(3)};border-color:${fill(0)}40;color:${txt(3)}">
-      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">PÓSTER · EDITORIAL</div>
-      <h4 style="color:${fill(1)};font-size:2.2rem">ARTE Y COLOR</h4>
-      <p style="color:${txt(3)};opacity:0.75">Combinación sobre fondo acento. Ideal para pósters, portadas y piezas con alto impacto visual.</p>
-      <span class="tag" style="background:${fill(0)};color:${contrastColor(fill(0))};border:1px solid ${fill(0)}">VOL. I</span>
+      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">${l.prevLabel2}</div>
+      <h4 style="color:${fill(1)};font-size:2.2rem">${l.prevTitle2}</h4>
+      <p style="color:${txt(3)};opacity:0.75">${l.prevDesc2}</p>
+      <span class="tag" style="background:${fill(0)};color:${contrastColor(fill(0))};border:1px solid ${fill(0)}">${l.prevBtn2}</span>
       <div class="dot" style="background:${fill(2)};opacity:0.7"></div>
       <div class="bar" style="background:${fill(0)}"></div>
     </div>
 
-    <!-- Card 3: Dark bg -->
     <div class="preview-card" style="background:${fill(2)};border-color:${fill(3)}40;color:${txt(2)}">
-      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">TIPOGRAFÍA · BODY</div>
-      <h4 style="color:${fill(4)}">LEGIBILIDAD</h4>
-      <p style="color:${txt(2)};opacity:0.8;font-size:0.78rem">Texto corrido sobre el tercer tono. Evalúa si el contraste es suficiente para cuerpos de texto largos y contenido accesible.</p>
+      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.6;margin-bottom:8px">${l.prevLabel3}</div>
+      <h4 style="color:${fill(4)}">${l.prevTitle3}</h4>
+      <p style="color:${txt(2)};opacity:0.8;font-size:0.78rem">${l.prevDesc3}</p>
       <div class="bar" style="background:${fill(3)}"></div>
     </div>
 
-    <!-- Card 4: Gradient / illustration hint -->
-    <div class="preview-card" style="background:linear-gradient(135deg, ${fill(0)}, ${fill(3)});border-color:transparent;color:${txt(0)}">
-      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.7;margin-bottom:8px">GRADIENTE · ILUSTRACIÓN</div>
-      <h4>BASE → ACENTO</h4>
-      <p style="opacity:0.8">Flujo natural entre tus dos colores principales. Útil en fondos, headers e ilustraciones.</p>
-      <span class="tag" style="background:rgba(255,255,255,0.15);color:#fff;margin-top:auto">BLEND MODE</span>
+    <div class="preview-card" style="background:linear-gradient(135deg,${fill(0)},${fill(3)});border-color:transparent;color:${txt(0)}">
+      <div style="font-family:'VT323',monospace;font-size:0.9rem;letter-spacing:3px;opacity:0.7;margin-bottom:8px">${l.prevLabel4}</div>
+      <h4>${l.prevTitle4}</h4>
+      <p style="opacity:0.8">${l.prevDesc4}</p>
+      <span class="tag" style="background:rgba(255,255,255,0.15);color:#fff;margin-top:auto">${l.prevBtn4}</span>
     </div>
   `;
 }
@@ -1357,6 +1353,14 @@ const I18N = {
     warmCoolFn: h => h<60||h>300 ? '🔥 CÁLIDA' : h>150&&h<270 ? '❄ FRÍA' : '⚖ NEUTRA',
     moodFn: (l,s) => l>70?'LUMINOSA':l<35?'OSCURA':s>70?'SATURADA':'BALANCEADA',
     toastCopied:'HEX COPIADO ✓', toastPng:'PNG DESCARGADO ✓',
+    prevLabel1:'SISTEMA · UI',         prevTitle1:'DISEÑO & COLOR',   prevBtn1:'ACCIÓN PRIMARIA',
+    prevDesc1:'Así se verían tus colores en una interfaz. El acento crea jerarquía visual y guía la atención.',
+    prevLabel2:'PÓSTER · EDITORIAL',   prevTitle2:'ARTE Y COLOR',     prevBtn2:'VOL. I',
+    prevDesc2:'Combinación sobre fondo acento. Ideal para pósters, portadas y piezas con alto impacto visual.',
+    prevLabel3:'TIPOGRAFÍA · BODY',    prevTitle3:'LEGIBILIDAD',
+    prevDesc3:'Texto corrido sobre el tercer tono. Evalúa si el contraste es suficiente para cuerpos de texto largos.',
+    prevLabel4:'GRADIENTE · ILUSTRACIÓN', prevTitle4:'BASE → ACENTO', prevBtn4:'BLEND MODE',
+    prevDesc4:'Flujo natural entre tus dos colores principales. Útil en fondos, headers e ilustraciones.',
     types:{
       monochromatic:{label:'MONOCROMÁTICA',    desc:'Un solo matiz, múltiples luminosidades y saturaciones'},
       analogous:    {label:'ANÁLOGA',           desc:'Colores adyacentes en el círculo cromático · armonía suave'},
@@ -1393,6 +1397,14 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 WARM':h>150&&h<270?'❄ COOL':'⚖ NEUTRAL',
     moodFn: (l,s) => l>70?'BRIGHT':l<35?'DARK':s>70?'SATURATED':'BALANCED',
     toastCopied:'HEX COPIED ✓', toastPng:'PNG DOWNLOADED ✓',
+    prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & COLOR',   prevBtn1:'PRIMARY ACTION',
+    prevDesc1:'How your colors would look in an interface. The accent creates visual hierarchy and guides attention.',
+    prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ART & COLOR',      prevBtn2:'VOL. I',
+    prevDesc2:'Combination on accent background. Ideal for posters, covers and high-impact visual pieces.',
+    prevLabel3:'TYPOGRAPHY · BODY',    prevTitle3:'READABILITY',
+    prevDesc3:'Body text on the third tone. Evaluate if the contrast is sufficient for long text and accessible content.',
+    prevLabel4:'GRADIENT · ILLUSTRATION', prevTitle4:'BASE → ACCENT', prevBtn4:'BLEND MODE',
+    prevDesc4:'Natural flow between your two main colors. Useful in backgrounds, headers and illustrations.',
     types:{
       monochromatic:{label:'MONOCHROMATIC',    desc:'Single hue, multiple lightness and saturation levels'},
       analogous:    {label:'ANALOGOUS',        desc:'Adjacent colors on the color wheel · soft harmony'},
@@ -1429,6 +1441,14 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 QUENTE':h>150&&h<270?'❄ FRIA':'⚖ NEUTRA',
     moodFn: (l,s) => l>70?'LUMINOSA':l<35?'ESCURA':s>70?'SATURADA':'EQUILIBRADA',
     toastCopied:'HEX COPIADO ✓', toastPng:'PNG BAIXADO ✓',
+    prevLabel1:'SISTEMA · UI',         prevTitle1:'DESIGN & COR',     prevBtn1:'AÇÃO PRIMÁRIA',
+    prevDesc1:'Como suas cores ficariam em uma interface. O acento cria hierarquia visual e guia a atenção.',
+    prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ARTE E COR',       prevBtn2:'VOL. I',
+    prevDesc2:'Combinação sobre fundo de acento. Ideal para pôsteres, capas e peças de alto impacto visual.',
+    prevLabel3:'TIPOGRAFIA · CORPO',   prevTitle3:'LEGIBILIDADE',
+    prevDesc3:'Texto corrido sobre o terceiro tom. Avalie se o contraste é suficiente para textos longos e acessíveis.',
+    prevLabel4:'GRADIENTE · ILUSTRAÇÃO', prevTitle4:'BASE → ACENTO', prevBtn4:'BLEND MODE',
+    prevDesc4:'Fluxo natural entre suas duas cores principais. Útil em fundos, cabeçalhos e ilustrações.',
     types:{
       monochromatic:{label:'MONOCROMÁTICA',    desc:'Um único matiz, múltiplas luminosidades e saturações'},
       analogous:    {label:'ANÁLOGA',           desc:'Cores adjacentes na roda · harmonia suave'},
@@ -1465,6 +1485,14 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 CHAUDE':h>150&&h<270?'❄ FROIDE':'⚖ NEUTRE',
     moodFn: (l,s) => l>70?'LUMINEUSE':l<35?'SOMBRE':s>70?'SATURÉE':'ÉQUILIBRÉE',
     toastCopied:'HEX COPIÉ ✓', toastPng:'PNG TÉLÉCHARGÉ ✓',
+    prevLabel1:'SYSTÈME · UI',         prevTitle1:'DESIGN & COULEUR', prevBtn1:'ACTION PRINCIPALE',
+    prevDesc1:'Voici à quoi ressembleraient vos couleurs dans une interface. L\'accent crée une hiérarchie visuelle.',
+    prevLabel2:'AFFICHE · ÉDITORIAL',  prevTitle2:'ART & COULEUR',    prevBtn2:'VOL. I',
+    prevDesc2:'Combinaison sur fond d\'accent. Idéal pour affiches, couvertures et pièces à fort impact visuel.',
+    prevLabel3:'TYPOGRAPHIE · CORPS',  prevTitle3:'LISIBILITÉ',
+    prevDesc3:'Texte courant sur le troisième ton. Évaluez si le contraste est suffisant pour de longs textes accessibles.',
+    prevLabel4:'DÉGRADÉ · ILLUSTRATION', prevTitle4:'BASE → ACCENT', prevBtn4:'BLEND MODE',
+    prevDesc4:'Flux naturel entre vos deux couleurs principales. Utile pour les fonds, en-têtes et illustrations.',
     types:{
       monochromatic:{label:'MONOCHROMATIQUE', desc:'Teinte unique, luminosités et saturations variées'},
       analogous:    {label:'ANALOGUE',         desc:'Couleurs adjacentes · harmonie douce'},
@@ -1501,6 +1529,14 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 WARM':h>150&&h<270?'❄ KALT':'⚖ NEUTRAL',
     moodFn: (l,s) => l>70?'HELL':l<35?'DUNKEL':s>70?'GESÄTTIGT':'AUSGEWOGEN',
     toastCopied:'HEX KOPIERT ✓', toastPng:'PNG HERUNTERGELADEN ✓',
+    prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & FARBE',   prevBtn1:'HAUPTAKTION',
+    prevDesc1:'So würden Ihre Farben in einer Oberfläche aussehen. Der Akzent schafft visuelle Hierarchie.',
+    prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'KUNST & FARBE',    prevBtn2:'VOL. I',
+    prevDesc2:'Kombination auf Akzenthintergrund. Ideal für Poster, Cover und visuell wirkungsvolle Stücke.',
+    prevLabel3:'TYPOGRAFIE · FLIESSTEXT', prevTitle3:'LESBARKEIT',
+    prevDesc3:'Fließtext auf dem dritten Ton. Prüfen Sie ob der Kontrast für lange Texte und barrierefreie Inhalte ausreicht.',
+    prevLabel4:'VERLAUF · ILLUSTRATION', prevTitle4:'BASIS → AKZENT', prevBtn4:'BLEND MODE',
+    prevDesc4:'Natürlicher Übergang zwischen Ihren zwei Hauptfarben. Nützlich für Hintergründe, Header und Illustrationen.',
     types:{
       monochromatic:{label:'MONOCHROM',       desc:'Ein Farbton, verschiedene Helligkeiten und Sättigungen'},
       analogous:    {label:'ANALOG',           desc:'Benachbarte Farben · sanfte Harmonie'},
@@ -1537,6 +1573,14 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 暖色':h>150&&h<270?'❄ 寒色':'⚖ 中性',
     moodFn: (l,s) => l>70?'明るい':l<35?'暗い':s>70?'鮮やか':'バランス良い',
     toastCopied:'HEXコピー済み ✓', toastPng:'PNGダウンロード済み ✓',
+    prevLabel1:'システム · UI',        prevTitle1:'デザイン & カラー', prevBtn1:'メインアクション',
+    prevDesc1:'インターフェースでの色の見え方です。アクセントカラーが視覚的な階層を作り、注目を集めます。',
+    prevLabel2:'ポスター · エディトリアル', prevTitle2:'アートとカラー', prevBtn2:'VOL. I',
+    prevDesc2:'アクセント背景上の組み合わせ。ポスター、表紙、視覚的インパクトの高い作品に最適です。',
+    prevLabel3:'タイポグラフィ · 本文', prevTitle3:'可読性',
+    prevDesc3:'3番目のトーンの上の本文テキスト。長いテキストやアクセシブルなコンテンツに十分なコントラストか評価してください。',
+    prevLabel4:'グラデーション · イラスト', prevTitle4:'ベース → アクセント', prevBtn4:'BLEND MODE',
+    prevDesc4:'2つのメインカラー間の自然な流れ。背景、ヘッダー、イラストに役立ちます。',
     types:{
       monochromatic:{label:'単色',           desc:'一つの色相、複数の明度と彩度'},
       analogous:    {label:'類似色',          desc:'ホイール上の隣接色 · 柔らかい調和'},
