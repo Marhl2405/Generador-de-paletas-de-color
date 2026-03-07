@@ -44,17 +44,14 @@ body::before {
   z-index: 999;
 }
 
-/* Grid bg */
-body::after {
-  content: '';
+/* Grid bg — now driven by JS canvas */
+#bgCanvas {
   position: fixed;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(255,77,109,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,77,109,0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
+  width: 100%; height: 100%;
   pointer-events: none;
   z-index: 0;
+  transition: opacity 0.6s;
 }
 
 .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
@@ -150,12 +147,14 @@ header {
 .btn-gen:hover { background: #ff6b85; box-shadow: 0 0 35px var(--glow); transform: translateY(-1px); }
 .btn-gen:active { transform: translateY(1px); }
 
-.btn-lock {
+.btn-dl {
   background: transparent;
-  border-color: var(--border);
-  color: var(--dim);
+  border-color: #00ffe5;
+  color: #00ffe5;
+  box-shadow: 0 0 14px rgba(0,255,229,0.2);
 }
-.btn-lock:hover { border-color: #00ffe5; color: #00ffe5; }
+.btn-dl:hover { background: rgba(0,255,229,0.08); box-shadow: 0 0 24px rgba(0,255,229,0.35); transform: translateY(-1px); }
+.btn-dl:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ── PALETTE INFO PANEL ── */
 .palette-info-panel {
@@ -406,6 +405,45 @@ header {
   height: 4px; position: absolute; bottom: 0; left: 0; right: 0;
 }
 
+/* ── TEMPERATURE SELECTOR ── */
+.temp-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.temp-label {
+  font-family: 'VT323', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin-right: 4px;
+}
+.temp-btn {
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 0;
+}
+.temp-btn:hover { border-color: var(--text); color: var(--text); }
+.temp-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255,77,109,0.08);
+  box-shadow: 0 0 10px rgba(255,77,109,0.2);
+}
+.temp-btn.t-cold.active  { border-color: #5bc8f5; color: #5bc8f5; background: rgba(91,200,245,0.08); box-shadow: 0 0 10px rgba(91,200,245,0.2); }
+.temp-btn.t-warm.active  { border-color: #ffaa44; color: #ffaa44; background: rgba(255,170,68,0.08); box-shadow: 0 0 10px rgba(255,170,68,0.2); }
+.temp-btn.t-neut.active  { border-color: #b8a0d8; color: #b8a0d8; background: rgba(184,160,216,0.08); box-shadow: 0 0 10px rgba(184,160,216,0.2); }
+.temp-btn.t-dark.active  { border-color: #888; color: #aaa; background: rgba(100,100,100,0.1); }
+.temp-btn.t-any.active   { border-color: var(--accent); color: var(--accent); background: rgba(255,77,109,0.08); }
+
 /* ── Keyboard hint ── */
 .kb-hint {
   text-align: center;
@@ -426,30 +464,42 @@ kbd {
 </style>
 </head>
 <body>
+<canvas id="bgCanvas"></canvas>
 <div class="wrap">
 
   <header>
     <div>
       <div class="logo">CHROMATICA</div>
-      <div class="logo-sub">// GENERADOR DE PALETAS RETRO //</div>
+      <div class="logo-sub">// GENERADOR DE PALETAS //</div>
     </div>
-    <div class="controls">
-      <select class="type-select" id="paletteType">
-        <option value="random">★ ALEATORIO</option>
-        <option value="monochromatic">MONOCROMÁTICA</option>
-        <option value="analogous">ANÁLOGA</option>
-        <option value="complementary">COMPLEMENTARIA</option>
-        <option value="split">SPLIT-COMPLEMENTARIA</option>
-        <option value="triadic">TRIADA</option>
-        <option value="tetradic">CUADRADA (TÉTRADA)</option>
-        <option value="square">CUADRADO EXACTO</option>
-        <option value="pastel">PASTEL</option>
-        <option value="neon">NEÓN</option>
-        <option value="earth">TIERRAS</option>
-        <option value="dark">OSCURA / SOMBRÍA</option>
-        <option value="vintage">VINTAGE</option>
-      </select>
-      <button class="btn btn-gen" id="btnGenerate" onclick="generate()">▶ GENERAR</button>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+      <div class="controls">
+        <select class="type-select" id="paletteType">
+          <option value="random">★ ALEATORIO</option>
+          <option value="monochromatic">MONOCROMÁTICA</option>
+          <option value="analogous">ANÁLOGA</option>
+          <option value="complementary">COMPLEMENTARIA</option>
+          <option value="split">SPLIT-COMPLEMENTARIA</option>
+          <option value="triadic">TRIADA</option>
+          <option value="tetradic">CUADRADA (TÉTRADA)</option>
+          <option value="square">CUADRADO EXACTO</option>
+          <option value="pastel">PASTEL</option>
+          <option value="neon">NEÓN</option>
+          <option value="earth">TIERRAS</option>
+          <option value="dark">OSCURA / SOMBRÍA</option>
+          <option value="vintage">VINTAGE</option>
+        </select>
+        <button class="btn btn-gen" id="btnGenerate" onclick="generate()">▶ GENERAR</button>
+        <button class="btn btn-dl" id="btnDownload" onclick="downloadPNG()" disabled>⬇ PNG</button>
+      </div>
+      <div class="temp-row">
+        <span class="temp-label">TEMP:</span>
+        <button class="temp-btn t-any active" data-temp="any"   onclick="setTemp('any')">★ LIBRE</button>
+        <button class="temp-btn t-warm"       data-temp="warm"  onclick="setTemp('warm')">🔥 CÁLIDA</button>
+        <button class="temp-btn t-cold"       data-temp="cold"  onclick="setTemp('cold')">❄ FRÍA</button>
+        <button class="temp-btn t-neut"       data-temp="neutral" onclick="setTemp('neutral')">⚖ NEUTRA</button>
+        <button class="temp-btn t-dark"       data-temp="dark2" onclick="setTemp('dark2')">🌑 OSCURA</button>
+      </div>
     </div>
   </header>
 
@@ -597,7 +647,7 @@ const TYPES = {
     desc: 'Un solo matiz, múltiples luminosidades y saturaciones',
     gen() {
       const h = randInt(0,359), s = randInt(40,90);
-      return [20,35,50,65,80].map(l => ({ hex: hslToHex(h, s*(l<40?0.4:1), l), h, s, l }));
+      return [20,35,50,65,80].map(l => ({ hex: hslToHexT(h, s*(l<40?0.4:1), l) }));
     }
   },
   analogous: {
@@ -605,7 +655,7 @@ const TYPES = {
     desc: 'Colores adyacentes en el círculo cromático · armonía suave',
     gen() {
       const h = randInt(0,359), s = randInt(50,85), l = randInt(40,65);
-      return [-30,-15,0,15,30].map(d => ({ hex: hslToHex(h+d, s, l+randInt(-8,8)) }));
+      return [-30,-15,0,15,30].map(d => ({ hex: hslToHexT(h+d, s, l+randInt(-8,8)) }));
     }
   },
   complementary: {
@@ -614,12 +664,11 @@ const TYPES = {
     gen() {
       const h = randInt(0,359), s = randInt(55,85), l = randInt(38,62);
       const h2 = h + 180;
-      const cols = [
-        hslToHex(h, s, l-15), hslToHex(h, s, l),
-        hslToHex(h, s*0.3, 88),
-        hslToHex(h2, s, l), hslToHex(h2, s, l-15)
-      ];
-      return cols.map(hex => ({ hex }));
+      return [
+        hslToHexT(h, s, l-15), hslToHexT(h, s, l),
+        hslToHexT(h, s*0.3, 88),
+        hslToHexT(h2, s, l), hslToHexT(h2, s, l-15)
+      ].map(hex => ({ hex }));
     }
   },
   split: {
@@ -628,11 +677,11 @@ const TYPES = {
     gen() {
       const h = randInt(0,359), s = randInt(55,80), l = randInt(40,62);
       return [
-        hslToHex(h, s, l),
-        hslToHex(h, s*0.6, l+20),
-        hslToHex(h+150, s, l),
-        hslToHex(h+210, s, l),
-        hslToHex(h+180, s*0.4, 85)
+        hslToHexT(h, s, l),
+        hslToHexT(h, s*0.6, l+20),
+        hslToHexT(h+150, s, l),
+        hslToHexT(h+210, s, l),
+        hslToHexT(h+180, s*0.4, 85)
       ].map(hex => ({ hex }));
     }
   },
@@ -642,11 +691,11 @@ const TYPES = {
     gen() {
       const h = randInt(0,359), s = randInt(55,85), l = randInt(40,60);
       return [
-        hslToHex(h, s, l),
-        hslToHex(h, s*0.5, l+22),
-        hslToHex(h+120, s, l),
-        hslToHex(h+240, s, l),
-        hslToHex(h+120, s*0.6, l-12)
+        hslToHexT(h, s, l),
+        hslToHexT(h, s*0.5, l+22),
+        hslToHexT(h+120, s, l),
+        hslToHexT(h+240, s, l),
+        hslToHexT(h+120, s*0.6, l-12)
       ].map(hex => ({ hex }));
     }
   },
@@ -655,8 +704,8 @@ const TYPES = {
     desc: 'Cuatro colores formando rectángulo en el círculo',
     gen() {
       const h = randInt(0,359), s = randInt(50,80), l = randInt(40,60);
-      return [0,60,180,240].map(d => ({ hex: hslToHex(h+d, s, l+randInt(-8,8)) }))
-        .concat([{ hex: hslToHex(h, s*0.3, 88) }]);
+      return [0,60,180,240].map(d => ({ hex: hslToHexT(h+d, s, l+randInt(-8,8)) }))
+        .concat([{ hex: hslToHexT(h, s*0.3, 88) }]);
     }
   },
   square: {
@@ -664,8 +713,8 @@ const TYPES = {
     desc: 'Cuatro colores separados 90° · riqueza y complejidad',
     gen() {
       const h = randInt(0,359), s = randInt(55,82), l = randInt(42,60);
-      return [0,90,180,270].map(d => ({ hex: hslToHex(h+d, s, l) }))
-        .concat([{ hex: hslToHex(h, 20, 92) }]);
+      return [0,90,180,270].map(d => ({ hex: hslToHexT(h+d, s, l) }))
+        .concat([{ hex: hslToHexT(h, 20, 92) }]);
     }
   },
   pastel: {
@@ -673,7 +722,7 @@ const TYPES = {
     desc: 'Saturación baja, luminosidad alta · suave y soñadora',
     gen() {
       const h = randInt(0,359);
-      return [0,60,130,210,290].map(d => ({ hex: hslToHex(h+d, randInt(30,55), randInt(78,92)) }));
+      return [0,60,130,210,290].map(d => ({ hex: hslToHexT(h+d, randInt(30,55), randInt(78,92)) }));
     }
   },
   neon: {
@@ -681,8 +730,8 @@ const TYPES = {
     desc: 'Saturación máxima sobre oscuro · eléctrica y vibrante',
     gen() {
       const h = randInt(0,359);
-      const neons = [0,72,144,216,288].map(d => hslToHex(h+d, 100, randInt(50,65)));
-      neons[2] = hslToHex(h+144, 20, 10);
+      const neons = [0,72,144,216,288].map(d => hslToHexT(h+d, 100, randInt(50,65)));
+      neons[2] = hslToHexT(h+144, 20, 10);
       return neons.map(hex => ({ hex }));
     }
   },
@@ -697,7 +746,7 @@ const TYPES = {
         [15,randInt(40,65),randInt(20,40)],
         [28,randInt(20,40),randInt(80,92)]
       ];
-      return bases.map(([h,s,l]) => ({ hex: hslToHex(h+randInt(-5,5), s, l) }));
+      return bases.map(([h,s,l]) => ({ hex: hslToHexT(h+randInt(-5,5), s, l) }));
     }
   },
   dark: {
@@ -706,10 +755,10 @@ const TYPES = {
     gen() {
       const h = randInt(0,359), s = randInt(30,70);
       return [
-        hslToHex(h, s, 8), hslToHex(h, s*0.7, 15),
-        hslToHex(h, s, 25),
-        hslToHex(h+180, randInt(70,100), randInt(55,72)),
-        hslToHex(h, 10, 85)
+        hslToHexT(h, s, 8), hslToHexT(h, s*0.7, 15),
+        hslToHexT(h, s, 25),
+        hslToHexT(h+180, randInt(70,100), randInt(55,72)),
+        hslToHexT(h, 10, 85)
       ].map(hex => ({ hex }));
     }
   },
@@ -719,7 +768,7 @@ const TYPES = {
     gen() {
       const h = randInt(0,359), s = randInt(25,50), l = randInt(45,72);
       return [0,40,90,180,260].map(d => ({
-        hex: hslToHex(h+d, s+randInt(-10,10), l+randInt(-15,15))
+        hex: hslToHexT(h+d, s+randInt(-10,10), l+randInt(-15,15))
       }));
     }
   },
@@ -810,6 +859,11 @@ function generate() {
   renderSwatches();
   renderPreview();
   saveToHistory(tag);
+  updateBackground();
+  document.getElementById('btnDownload').disabled = false;
+
+  // Store stats for PNG export
+  window._paletteStats = { tag, avgHue, avgSat, avgLum, warmCool, mood };
 }
 
 function renderSwatches() {
@@ -924,6 +978,281 @@ function loadHistory(i) {
   renderSwatches();
   renderPreview();
 }
+
+// ── Download PNG ──
+function downloadPNG() {
+  if (!currentPalette.length) return;
+  const stats = window._paletteStats || {};
+
+  const cols = currentPalette.length <= 3 ? currentPalette.length : Math.ceil(currentPalette.length / 2);
+  const rows = Math.ceil(currentPalette.length / cols);
+
+  const PAD       = 40;   // outer margin
+  const GAP       = 10;   // gap between swatches
+  const CELL_W    = 240;  // swatch width
+  const SWATCH_H  = 280;  // colored rectangle height
+  const INFO_H    = 90;   // text block below each swatch
+  const CELL_H    = SWATCH_H + INFO_H;
+  const HEADER_H  = 210;  // top stats area
+  const FOOTER_H  = 40;
+
+  const W = PAD * 2 + cols * CELL_W + (cols - 1) * GAP;
+  const H = HEADER_H + rows * CELL_H + (rows - 1) * GAP + PAD + FOOTER_H;
+
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d');
+
+  // ── Background ──
+  cx.fillStyle = '#0d0d0f';
+  cx.fillRect(0, 0, W, H);
+
+  // ── Grid lines using palette colors ──
+  const gridSize = 40;
+  for (let x = 0; x <= W; x += gridSize) {
+    const c = currentPalette[Math.floor(x / gridSize) % currentPalette.length];
+    const rgb = hexToRgb(c.hex);
+    cx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.09)`;
+    cx.lineWidth = 1;
+    cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, H); cx.stroke();
+  }
+  for (let y = 0; y <= H; y += gridSize) {
+    const c = currentPalette[Math.floor(y / gridSize) % currentPalette.length];
+    const rgb = hexToRgb(c.hex);
+    cx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.09)`;
+    cx.lineWidth = 1;
+    cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke();
+  }
+
+  // ── Scanlines ──
+  for (let y = 0; y < H; y += 4) {
+    cx.fillStyle = 'rgba(255,255,255,0.016)';
+    cx.fillRect(0, y + 2, W, 2);
+  }
+
+  // ── HEADER ──
+  const accentHex = currentPalette[Math.min(3, currentPalette.length - 1)].hex;
+  const accentRgb = hexToRgb(accentHex);
+
+  // Logo
+  cx.textAlign = 'left';
+  cx.font = 'bold 44px "Courier New", monospace';
+  cx.fillStyle = '#e8e0d0';
+  cx.fillText('CHROMATICA', PAD, 56);
+
+  // Accent underline
+  cx.strokeStyle = accentHex;
+  cx.lineWidth = 2;
+  cx.shadowColor = `rgba(${accentRgb.r},${accentRgb.g},${accentRgb.b},0.9)`;
+  cx.shadowBlur = 10;
+  cx.beginPath(); cx.moveTo(PAD, 64); cx.lineTo(PAD + 360, 64); cx.stroke();
+  cx.shadowBlur = 0;
+
+  // Palette type
+  cx.font = '18px "Courier New", monospace';
+  cx.fillStyle = accentHex;
+  cx.fillText((stats.tag || 'PALETA').toUpperCase(), PAD, 92);
+
+  // Divider
+  cx.strokeStyle = '#2a2a35';
+  cx.lineWidth = 1;
+  cx.beginPath(); cx.moveTo(PAD, 108); cx.lineTo(W - PAD, 108); cx.stroke();
+
+  // Stats row
+  const statItems = [
+    ['MATIZ',        `${stats.avgHue || 0}°`],
+    ['SATURACIÓN',   `${stats.avgSat || 0}%`],
+    ['LUMINOSIDAD',  `${stats.avgLum || 0}%`],
+    ['TEMPERATURA',  (stats.warmCool || '—').replace(/[🔥❄⚖🌑]/gu, '').trim()],
+    ['MOOD',         stats.mood || '—'],
+  ];
+
+  const statAreaW = W - PAD * 2;
+  const statGap   = statAreaW / statItems.length;
+  const statY     = 130;
+
+  statItems.forEach(([lbl, val], i) => {
+    const sx = PAD + i * statGap;
+    cx.textAlign = 'left';
+    cx.font = '10px "Courier New", monospace';
+    cx.fillStyle = '#6a6478';
+    cx.fillText(lbl, sx, statY);
+    cx.font = 'bold 20px "Courier New", monospace';
+    cx.fillStyle = '#e8e0d0';
+    cx.fillText(val, sx, statY + 28);
+  });
+
+  // Second divider
+  cx.strokeStyle = '#2a2a35';
+  cx.lineWidth = 1;
+  cx.beginPath(); cx.moveTo(PAD, HEADER_H - 14); cx.lineTo(W - PAD, HEADER_H - 14); cx.stroke();
+
+  // ── Swatches grid ──
+  currentPalette.forEach((c, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x   = PAD + col * (CELL_W + GAP);
+    const y   = HEADER_H + row * (CELL_H + GAP);
+
+    const rgb = hexToRgb(c.hex);
+    const [h, s, l] = hexToHsl(c.hex);
+
+    // ── Colored rectangle ──
+    cx.fillStyle = c.hex;
+    cx.fillRect(x, y, CELL_W, SWATCH_H);
+
+    // ── Info block (dark bg) ──
+    cx.fillStyle = '#111114';
+    cx.fillRect(x, y + SWATCH_H, CELL_W, INFO_H);
+
+    // Fine border around whole cell
+    cx.strokeStyle = 'rgba(255,255,255,0.07)';
+    cx.lineWidth = 1;
+    cx.strokeRect(x, y, CELL_W, SWATCH_H + INFO_H);
+
+    // ── Text: HEX ──
+    const tx = x + CELL_W / 2;
+    cx.textAlign = 'center';
+
+    cx.font = 'bold 16px "Courier New", monospace';
+    cx.fillStyle = '#e8e0d0';
+    cx.fillText(c.hex.toUpperCase(), tx, y + SWATCH_H + 24);
+
+    // ── Text: RGB ──
+    cx.font = '12px "Courier New", monospace';
+    cx.fillStyle = '#8a7898';
+    cx.fillText(`RGB  ${rgb.r}, ${rgb.g}, ${rgb.b}`, tx, y + SWATCH_H + 46);
+
+    // ── Text: HSL ──
+    cx.fillStyle = '#6a5878';
+    cx.fillText(`HSL  ${h}°  ${s}%  ${l}%`, tx, y + SWATCH_H + 66);
+  });
+
+  // ── Footer ──
+  cx.textAlign = 'center';
+  cx.font = '10px "Courier New", monospace';
+  cx.fillStyle = '#2e2a38';
+  cx.fillText('CHROMATICA · GENERADOR DE PALETAS', W / 2, H - 14);
+
+  // ── Download ──
+  const link = document.createElement('a');
+  link.download = `chromatica_${(stats.tag || 'paleta').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.png`;
+  link.href = cv.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  const t = document.getElementById('toast');
+  t.textContent = 'PNG DESCARGADO ✓';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── Temperature filter ──
+let currentTemp = 'any';
+
+// Hue ranges per temperature
+const TEMP_RANGES = {
+  warm:    [[0,60],[300,360]],   // reds, oranges, yellows, hot pinks
+  cold:    [[160,280]],          // cyans, blues, purples
+  neutral: [[60,160],[280,300]], // yellows-green, soft purples
+  dark2:   null,                 // handled separately
+  any:     null
+};
+
+function setTemp(t) {
+  currentTemp = t;
+  document.querySelectorAll('.temp-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.temp === t);
+  });
+}
+
+function constrainHue(h) {
+  if (!currentTemp || currentTemp === 'any') return h;
+  if (currentTemp === 'dark2') return h; // dark handles its own L
+  const ranges = TEMP_RANGES[currentTemp];
+  if (!ranges) return h;
+  // Pick a random allowed range and map h into it
+  const r = pick(ranges);
+  return r[0] + ((h % 360) / 360) * (r[1] - r[0]);
+}
+
+function applyTempToHsl(h, s, l) {
+  let nh = constrainHue(h);
+  if (currentTemp === 'dark2') {
+    return [nh, Math.min(s, 60), Math.min(l, 35)];
+  }
+  if (currentTemp === 'warm') {
+    return [nh, Math.max(s, 50), Math.max(40, Math.min(l, 72))];
+  }
+  if (currentTemp === 'cold') {
+    return [nh, Math.max(s, 45), Math.max(38, Math.min(l, 75))];
+  }
+  if (currentTemp === 'neutral') {
+    return [nh, Math.min(s, 55), l];
+  }
+  return [nh, s, l];
+}
+
+// Patch hslToHex to apply temperature
+function hslToHexT(h, s, l) {
+  const [th, ts, tl] = applyTempToHsl(h, s, l);
+  return hslToHex(th, ts, tl);
+}
+
+// ── Dynamic background canvas ──
+function updateBackground() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!currentPalette.length) return;
+
+  const size = 40;
+  const cols = Math.ceil(canvas.width / size) + 1;
+  const rows = Math.ceil(canvas.height / size) + 1;
+
+  // Draw vertical lines
+  for (let x = 0; x <= cols; x++) {
+    const c = currentPalette[x % currentPalette.length];
+    const rgb = hexToRgb(c.hex);
+    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.07)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x * size, 0);
+    ctx.lineTo(x * size, canvas.height);
+    ctx.stroke();
+  }
+  // Draw horizontal lines
+  for (let y = 0; y <= rows; y++) {
+    const c = currentPalette[y % currentPalette.length];
+    const rgb = hexToRgb(c.hex);
+    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.07)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, y * size);
+    ctx.lineTo(canvas.width, y * size);
+    ctx.stroke();
+  }
+
+  // Draw glowing intersection dots at random intersections
+  const dotCount = Math.min(cols * rows, 120);
+  for (let i = 0; i < dotCount; i++) {
+    const xi = Math.floor(Math.random() * cols);
+    const yi = Math.floor(Math.random() * rows);
+    const c = currentPalette[(xi + yi) % currentPalette.length];
+    const rgb = hexToRgb(c.hex);
+    const alpha = 0.04 + Math.random() * 0.1;
+    ctx.beginPath();
+    ctx.arc(xi * size, yi * size, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+    ctx.fill();
+  }
+}
+
+window.addEventListener('resize', updateBackground);
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
