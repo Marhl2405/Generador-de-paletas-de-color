@@ -1239,41 +1239,65 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  // Minimalist landscape - all 5 colors distributed optimally
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" style="width:100%;height:auto;">`;
+  // Cohesive art deco landscape with all 5 colors
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" style="width:100%;height:auto;">`;
 
-  // Background sky - p[0]
-  svg += `<rect width="600" height="150" fill="${p[0]}"/>`;
+  // Sky background - p[0]
+  svg += `<rect width="800" height="280" fill="${p[0]}"/>`;
 
-  // Mid sky gradient layer - p[1]
-  svg += `<rect y="100" width="600" height="80" fill="${p[1]}"/>`;
+  // Sun - p[1] - large focal point
+  svg += `<circle cx="650" cy="80" r="70" fill="${p[1]}"/>`;
+  svg += `<circle cx="650" cy="80" r="50" fill="${p[2]}" opacity="0.7"/>`;
 
-  // Sun/focal point - p[2]
-  svg += `<circle cx="480" cy="60" r="45" fill="${p[2]}"/>`;
+  // Stars - p[3]
+  svg += `<circle cx="100" cy="50" r="4" fill="${p[3]}"/>`;
+  svg += `<circle cx="250" cy="40" r="3" fill="${p[3]}"/>`;
+  svg += `<circle cx="400" cy="60" r="3.5" fill="${p[3]}"/>`;
+  svg += `<circle cx="550" cy="35" r="3" fill="${p[3]}"/>`;
+  svg += `<circle cx="750" cy="70" r="4" fill="${p[3]}"/>`;
 
-  // Distant mountains - p[3] - highest layer
-  svg += `<polygon points="0,150 80,90 160,140 240,80 320,130 400,85 480,150 560,110 600,150 600,200 0,200" fill="${p[3]}"/>`;
+  // Back mountains - p[2] and p[3] - dark geometric
+  svg += `<polygon points="0,280 150,150 280,280" fill="${p[3]}"/>`;
+  svg += `<polygon points="200,280 350,120 500,280" fill="${p[2]}"/>`;
+  svg += `<polygon points="450,280 550,180 650,280" fill="${p[3]}"/>`;
+  svg += `<polygon points="600,280 720,140 800,280" fill="${p[2]}"/>`;
 
-  // Mid mountains - p[4] - second layer, lighter
-  svg += `<polygon points="0,170 70,130 140,165 210,125 280,160 350,135 420,165 490,145 560,170 600,160 600,230 0,230" fill="${p[4]}"/>`;
+  // Mid mountains - p[4] - lighter layer
+  svg += `<polygon points="0,300 100,230 200,300 300,240 400,300 500,250 600,300 700,260 800,300" fill="${p[4]}"/>`;
 
-  // Accent peaks - p[0] - highlights from back
-  svg += `<polygon points="50,170 90,140 130,170 200,170 240,135 280,170 380,170 420,140 460,170 540,170 570,145 600,170" fill="${p[0]}" opacity="0.7"/>`;
+  // Middle ground base - p[1] - warm tone
+  svg += `<polygon points="0,320 800,300 800,380 0,380" fill="${p[1]}"/>`;
 
-  // Foreground land - p[1] - main base
-  svg += `<polygon points="0,210 60,190 120,210 180,195 240,210 300,200 360,210 420,205 480,210 540,205 600,210 600,300 0,300" fill="${p[1]}"/>`;
+  // Foreground - p[0] - darkest
+  svg += `<polygon points="0,380 800,360 800,500 0,500" fill="${p[0]}"/>`;
 
-  // Dark accent layer - p[3] - depth
-  svg += `<polygon points="0,230 80,215 160,230 240,220 320,230 400,225 480,230 560,228 600,230 600,300 0,300" fill="${p[3]}" opacity="0.5"/>`;
+  // Accent curved shapes - p[3] and p[4]
+  svg += `<path d="M 150 380 Q 200 340, 250 380" fill="none" stroke="${p[3]}" stroke-width="8"/>`;
+  svg += `<path d="M 500 380 Q 550 340, 600 380" fill="none" stroke="${p[3]}" stroke-width="8"/>`;
+  svg += `<ellipse cx="100" cy="420" rx="40" ry="20" fill="${p[2]}" opacity="0.5"/>`;
+  svg += `<ellipse cx="700" cy="420" rx="35" ry="18" fill="${p[2]}" opacity="0.5"/>`;
 
-  // Forward ground details - p[2] and p[4] accents
-  svg += `<polygon points="120,230 150,210 180,230 320,230 350,215 380,230 520,230 545,220 600,230" fill="${p[2]}" opacity="0.6"/>`;
-  svg += `<polygon points="200,250 240,230 280,250 400,250 430,235 460,250 580,250 600,245" fill="${p[4]}" opacity="0.7"/>`;
+  // Left plant - p[3]
+  svg += `<rect x="80" y="340" width="8" height="80" fill="${p[3]}"/>`;
+  svg += `<polygon points="90,350 75,320 95,330" fill="${p[3]}"/>`;
+  svg += `<polygon points="90,365 70,335 95,350" fill="${p[3]}"/>`;
+  svg += `<polygon points="90,380 75,355 95,370" fill="${p[3]}"/>`;
 
-  // Additional details for p[2] and p[0]
-  svg += `<circle cx="150" cy="100" r="25" fill="${p[2]}" opacity="0.5"/>`;
-  svg += `<circle cx="100" cy="140" r="18" fill="${p[4]}" opacity="0.4"/>`;
-  svg += `<polygon points="400,220 420,200 440,220" fill="${p[0]}" opacity="0.6"/>`;
+  // Right plant - p[2]
+  svg += `<rect x="710" y="340" width="8" height="80" fill="${p[2]}"/>`;
+  svg += `<polygon points="720,350 705,320 725,330" fill="${p[2]}"/>`;
+  svg += `<polygon points="720,365 700,335 725,350" fill="${p[2]}"/>`;
+  svg += `<polygon points="720,380 705,355 725,370" fill="${p[2]}"/>`;
+
+  // Small plants - p[4]
+  svg += `<rect x="300" y="370" width="5" height="40" fill="${p[4]}"/>`;
+  svg += `<polygon points="305,375 298,360 310,368" fill="${p[4]}"/>`;
+  svg += `<rect x="450" y="370" width="5" height="40" fill="${p[4]}"/>`;
+  svg += `<polygon points="455,375 448,360 460,368" fill="${p[4]}"/>`;
+
+  // Water/terrain accents - p[1]
+  svg += `<path d="M 0 420 Q 100 410, 200 420 T 400 420 T 600 420 T 800 420" fill="none" stroke="${p[1]}" stroke-width="3" opacity="0.6"/>`;
+  svg += `<path d="M 0 450 Q 150 440, 300 450 T 600 450 T 800 450" fill="none" stroke="${p[1]}" stroke-width="2" opacity="0.4"/>`;
 
   svg += `</svg>`;
 
