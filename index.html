@@ -1239,68 +1239,45 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  // Faithful art deco landscape - each color used once prominently
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 550" style="width:100%;height:auto;">`;
+  // Circular landscape preview - clear layer distinction
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" style="width:100%;height:auto;">`;
 
-  // Sky background - p[0] - primary color
-  svg += `<rect width="900" height="320" fill="${p[0]}"/>`;
+  // Outer background - p[0]
+  svg += `<rect width="600" height="600" fill="${p[0]}"/>`;
 
-  // Large sun - p[1] - dominant circle
-  svg += `<circle cx="700" cy="100" r="90" fill="${p[1]}"/>`;
+  // Main circle container
+  svg += `<defs>
+    <clipPath id="circleClip">
+      <circle cx="300" cy="300" r="280"/>
+    </clipPath>
+  </defs>`;
 
-  // Stars in sky - p[2] - accent points
-  svg += `<circle cx="80" cy="60" r="5" fill="${p[2]}"/>`;
-  svg += `<circle cx="200" cy="40" r="4" fill="${p[2]}"/>`;
-  svg += `<circle cx="380" cy="80" r="4.5" fill="${p[2]}"/>`;
-  svg += `<circle cx="550" cy="50" r="4" fill="${p[2]}"/>`;
-  svg += `<circle cx="850" cy="100" r="5" fill="${p[2]}"/>`;
+  // Circle background with clipping
+  svg += `<circle cx="300" cy="300" r="280" fill="${p[0]}" clip-path="url(#circleClip)"/>`;
 
-  // Back mountains left - p[3] - dark contrast
-  svg += `<polygon points="0,320 120,200 260,320" fill="${p[3]}"/>`;
-  svg += `<polygon points="200,320 340,180 480,320" fill="${p[3]}"/>`;
+  // Sky layer 1 - p[1] (top of circle)
+  svg += `<rect width="600" height="200" fill="${p[1]}" clip-path="url(#circleClip)"/>`;
 
-  // Back mountains right - p[4] - lighter mountains
-  svg += `<polygon points="480,320 620,160 760,320" fill="${p[4]}"/>`;
-  svg += `<polygon points="700,320 820,200 900,320" fill="${p[4]}"/>`;
+  // Sky layer 2 - p[2] (middle upper)
+  svg += `<rect y="150" width="600" height="100" fill="${p[2]}" clip-path="url(#circleClip)"/>`;
 
-  // Mid ground - p[1] - warm middle layer
-  svg += `<polygon points="0,340 900,320 900,400 0,400" fill="${p[1]}"/>`;
+  // Far mountains - p[3] (light mountains)
+  svg += `<polygon points="0,250 80,180 160,220 240,160 300,210 360,160 440,220 520,180 600,250 600,350 0,350" fill="${p[3]}" clip-path="url(#circleClip)"/>`;
 
-  // Foreground ground - p[0] - dark base
-  svg += `<polygon points="0,400 900,380 900,550 0,550" fill="${p[0]}"/>`;
+  // Mid mountains - p[4] (medium mountains)
+  svg += `<polygon points="0,300 70,240 140,280 210,230 280,270 320,260 380,280 460,240 530,290 600,300 600,400 0,400" fill="${p[4]}" clip-path="url(#circleClip)"/>`;
 
-  // Large left plant - p[3] - leafy vegetation
-  svg += `<rect x="60" y="360" width="10" height="100" fill="${p[3]}"/>`;
-  svg += `<polygon points="75,370 50,330 80,355" fill="${p[3]}"/>`;
-  svg += `<polygon points="75,385 45,350 82,370" fill="${p[3]}"/>`;
-  svg += `<polygon points="75,405 55,370 85,390" fill="${p[3]}"/>`;
-  svg += `<polygon points="75,425 50,385 80,415" fill="${p[3]}"/>`;
+  // Forest silhouette - p[3] darker (near black equivalent)
+  svg += `<polygon points="0,350 60,300 120,330 180,290 240,320 300,280 360,310 420,290 480,330 540,300 600,350 600,580 0,580" fill="${p[3]}" opacity="0.8" clip-path="url(#circleClip)"/>`;
 
-  // Large right plant - p[4] - leafy vegetation
-  svg += `<rect x="820" y="360" width="10" height="100" fill="${p[4]}"/>`;
-  svg += `<polygon points="835,370 810,330 840,355" fill="${p[4]}"/>`;
-  svg += `<polygon points="835,385 805,350 842,370" fill="${p[4]}"/>`;
-  svg += `<polygon points="835,405 815,370 845,390" fill="${p[4]}"/>`;
-  svg += `<polygon points="835,425 810,385 840,415" fill="${p[4]}"/>`;
+  // Darker forest layer - p[2] darkest
+  svg += `<polygon points="0,420 50,380 110,410 170,370 230,405 300,360 370,405 430,370 490,410 550,380 600,420 600,580 0,580" fill="${p[2]}" opacity="0.9" clip-path="url(#circleClip)"/>`;
 
-  // Center decorative arches - p[2]
-  svg += `<path d="M 300 400 Q 350 340, 400 400" fill="none" stroke="${p[2]}" stroke-width="6"/>`;
-  svg += `<path d="M 500 400 Q 550 340, 600 400" fill="none" stroke="${p[2]}" stroke-width="6"/>`;
+  // Very dark forest base - p[4] darkest
+  svg += `<polygon points="0,480 80,450 160,470 240,445 300,465 360,445 440,470 520,450 600,480 600,580 0,580" fill="${p[4]}" opacity="0.95" clip-path="url(#circleClip)"/>`;
 
-  // Small accent plants - p[1]
-  svg += `<rect x="350" y="420" width="6" height="50" fill="${p[1]}"/>`;
-  svg += `<polygon points="357,428 345,410 365,420" fill="${p[1]}"/>`;
-  svg += `<polygon points="357,440 342,420 368,435" fill="${p[1]}"/>`;
-  svg += `<rect x="550" y="420" width="6" height="50" fill="${p[1]}"/>`;
-  svg += `<polygon points="557,428 545,410 565,420" fill="${p[1]}"/>`;
-
-  // Water detail layer - p[2]
-  svg += `<path d="M 0 450 Q 150 435, 300 450 T 600 450 T 900 450" fill="none" stroke="${p[2]}" stroke-width="2" opacity="0.7"/>`;
-  svg += `<path d="M 0 480 Q 200 470, 400 480 T 800 480 T 900 480" fill="none" stroke="${p[2]}" stroke-width="2" opacity="0.5"/>`;
-
-  // Dome shapes at base - p[3]
-  svg += `<path d="M 200 400 Q 220 380, 240 400" fill="${p[3]}" opacity="0.8"/>`;
-  svg += `<path d="M 650 400 Q 670 380, 690 400" fill="${p[3]}" opacity="0.8"/>`;
+  // Circle border
+  svg += `<circle cx="300" cy="300" r="280" fill="none" stroke="${p[0]}" stroke-width="3"/>`;
 
   svg += `</svg>`;
 
