@@ -376,79 +376,16 @@ header {
   gap: 16px;
 }
 
-.preview-palette {
-  display: flex;
-  gap: 0;
-  height: 280px;
+.preview-illustration {
   border: 1px solid var(--border);
   overflow: hidden;
+  border-radius: 0;
 }
 
-.preview-card {
-  flex: 1;
-  padding: 24px 20px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border-right: 1px solid rgba(255,255,255,0.1);
-  transition: transform 0.3s ease;
-  cursor: pointer;
-}
-
-.preview-card:hover {
-  transform: scale(1.05);
-  z-index: 10;
-}
-
-.preview-card:last-child {
-  border-right: none;
-}
-
-.preview-card-hex {
-  font-family: 'VT323', monospace;
-  font-size: 0.75rem;
-  letter-spacing: 2px;
-  color: currentColor;
-  opacity: 0.8;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-
-.preview-card-icon {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  font-size: 3rem;
-}
-
-.preview-card-rgb {
-  font-family: 'VT323', monospace;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
-  color: currentColor;
-  opacity: 0.7;
-  line-height: 1.8;
-}
-
-@media(max-width:800px) {
-  .preview-palette {
-    flex-wrap: wrap;
-  }
-  .preview-card {
-    flex: 0 0 calc(50% - 8px);
-    height: auto;
-    min-height: 200px;
-  }
-}
-
-@media(max-width:600px) {
-  .preview-card {
-    flex: 0 0 100%;
-  }
+.preview-illustration svg {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* ── LANGUAGE SELECTOR ── */
@@ -1302,33 +1239,68 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  const colorCards = p.map((hex, i) => {
-    const rgb = hexToRgb(hex);
-    const textColor = contrastColor(hex);
-    const [h, s, l] = hexToHsl(hex);
+  const createCompositions = () => {
+    const illustrations = [];
+    const w = 400, h = 280;
 
-    // Determine icon based on color characteristics
-    const getIcon = () => {
-      if (l > 70) return '◯';        // Light colors
-      if (l < 30) return '■';        // Dark colors
-      if (s > 70) return '●';        // Saturated
-      return '◆';                    // Default
-    };
+    // Illustration 1: Layered geometric shapes showing color interaction
+    let svg1 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;
+    svg1 += `<rect width="${w}" height="${h}" fill="#0d0d0f"/>`;
+    svg1 += `<rect x="20" y="20" width="80" height="120" fill="${p[0]}" opacity="0.9"/>`;
+    svg1 += `<rect x="110" y="40" width="90" height="140" fill="${p[1]}" opacity="0.85"/>`;
+    svg1 += `<circle cx="280" cy="80" r="50" fill="${p[2]}" opacity="0.8"/>`;
+    svg1 += `<polygon points="320,160 360,220 280,220" fill="${p[3]}" opacity="0.85"/>`;
+    svg1 += `<circle cx="150" cy="200" r="30" fill="${p[4]}" opacity="0.75"/>`;
+    svg1 += `</svg>`;
+    illustrations.push(svg1);
 
-    return `
-      <div class="preview-card" style="background-color:${hex};color:${textColor}">
-        <div class="preview-card-hex">${hex.toUpperCase()}</div>
-        <div class="preview-card-icon">${getIcon()}</div>
-        <div class="preview-card-rgb">
-          R ${rgb.r}<br>
-          G ${rgb.g}<br>
-          B ${rgb.b}
-        </div>
-      </div>
-    `;
-  }).join('');
+    // Illustration 2: Artistic scene with all colors
+    let svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;
+    svg2 += `<defs>`;
+    svg2 += `<linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">`;
+    svg2 += `<stop offset="0%" style="stop-color:${p[0]};stop-opacity:1" />`;
+    svg2 += `<stop offset="100%" style="stop-color:${p[1]};stop-opacity:0.8" />`;
+    svg2 += `</linearGradient>`;
+    svg2 += `</defs>`;
+    svg2 += `<rect width="${w}" height="${h}" fill="url(#grad1)"/>`;
+    svg2 += `<polygon points="0,180 ${w*0.3},140 ${w*0.6},160 ${w},100 ${w},${h}" fill="${p[2]}" opacity="0.7"/>`;
+    svg2 += `<circle cx="${w*0.2}" cy="100" r="35" fill="${p[3]}" opacity="0.8"/>`;
+    svg2 += `<ellipse cx="${w*0.8}" cy="140" rx="45" ry="50" fill="${p[4]}" opacity="0.7"/>`;
+    svg2 += `<rect x="${w*0.35}" y="200" width="100" height="60" fill="${p[2]}" opacity="0.6"/>`;
+    svg2 += `</svg>`;
+    illustrations.push(svg2);
 
-  grid.innerHTML = `<div class="preview-palette">${colorCards}</div>`;
+    // Illustration 3: Modern abstract composition
+    let svg3 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;
+    svg3 += `<rect width="${w}" height="${h}" fill="#0d0d0f"/>`;
+    svg3 += `<rect x="0" y="0" width="${w*0.4}" height="${h}" fill="${p[0]}"/>`;
+    svg3 += `<rect x="${w*0.4}" y="0" width="${w*0.25}" height="${h*0.6}" fill="${p[1]}"/>`;
+    svg3 += `<rect x="${w*0.4}" y="${h*0.6}" width="${w*0.25}" height="${h*0.4}" fill="${p[3]}"/>`;
+    svg3 += `<rect x="${w*0.65}" y="0" width="${w*0.35}" height="${h}" fill="${p[2]}"/>`;
+    svg3 += `<circle cx="${w*0.5}" cy="${h*0.5}" r="45" fill="${p[4]}" opacity="0.9"/>`;
+    svg3 += `</svg>`;
+    illustrations.push(svg3);
+
+    // Illustration 4: Organic flowing design
+    let svg4 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;
+    svg4 += `<rect width="${w}" height="${h}" fill="#0d0d0f"/>`;
+    svg4 += `<path d="M0,100 Q${w*0.25},50 ${w*0.5},100 T${w},100 L${w},${h} L0,${h}" fill="${p[0]}" opacity="0.8"/>`;
+    svg4 += `<path d="M0,140 Q${w*0.25},100 ${w*0.5},140 T${w},140 L${w},${h} L0,${h}" fill="${p[1]}" opacity="0.7"/>`;
+    svg4 += `<circle cx="${w*0.15}" cy="60" r="40" fill="${p[2]}" opacity="0.75"/>`;
+    svg4 += `<circle cx="${w*0.85}" cy="80" r="35" fill="${p[3]}" opacity="0.7"/>`;
+    svg4 += `<polygon points="${w*0.5},160 ${w*0.35},220 ${w*0.65},220" fill="${p[4]}" opacity="0.8"/>`;
+    svg4 += `</svg>`;
+    illustrations.push(svg4);
+
+    return illustrations;
+  };
+
+  const illustrations = createCompositions();
+  const illustrationHtml = illustrations.map(svg =>
+    `<div class="preview-illustration">${svg}</div>`
+  ).join('');
+
+  grid.innerHTML = illustrationHtml;
 }
 
 function saveToHistory(tag) {
