@@ -371,39 +371,84 @@ header {
   padding-bottom: 8px;
 }
 .preview-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
-@media(max-width:600px){ .preview-grid{grid-template-columns:1fr} }
-.preview-card {
+
+.preview-palette {
+  display: flex;
+  gap: 0;
+  height: 280px;
   border: 1px solid var(--border);
-  padding: 24px;
+  overflow: hidden;
+}
+
+.preview-card {
+  flex: 1;
+  padding: 24px 20px;
   position: relative;
   overflow: hidden;
-  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  transition: transform 0.3s ease;
+  cursor: pointer;
 }
-.preview-card h4 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.8rem;
-  letter-spacing: 3px;
-  margin-bottom: 8px;
+
+.preview-card:hover {
+  transform: scale(1.05);
+  z-index: 10;
 }
-.preview-card p { font-size: 0.8rem; line-height: 1.6; opacity: 0.85; }
-.preview-card .tag {
-  display: inline-block;
-  padding: 3px 10px;
+
+.preview-card:last-child {
+  border-right: none;
+}
+
+.preview-card-hex {
   font-family: 'VT323', monospace;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   letter-spacing: 2px;
-  margin-top: 12px;
+  color: currentColor;
+  opacity: 0.8;
+  text-transform: uppercase;
+  margin-bottom: 20px;
 }
-.preview-card .dot {
-  width: 40px; height: 40px; border-radius: 50%;
-  position: absolute; bottom: 16px; right: 16px;
+
+.preview-card-icon {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 3rem;
 }
-.preview-card .bar {
-  height: 4px; position: absolute; bottom: 0; left: 0; right: 0;
+
+.preview-card-rgb {
+  font-family: 'VT323', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: currentColor;
+  opacity: 0.7;
+  line-height: 1.8;
+}
+
+@media(max-width:800px) {
+  .preview-palette {
+    flex-wrap: wrap;
+  }
+  .preview-card {
+    flex: 0 0 calc(50% - 8px);
+    height: auto;
+    min-height: 200px;
+  }
+}
+
+@media(max-width:600px) {
+  .preview-card {
+    flex: 0 0 100%;
+  }
 }
 
 /* ── LANGUAGE SELECTOR ── */
@@ -1255,129 +1300,35 @@ function copySwatch(hex) {
 function renderPreview() {
   if (!currentPalette.length) return;
   const p = currentPalette.map(c => c.hex);
-  const fill = i => p[i] || p[0];
   const grid = document.getElementById('previewGrid');
 
-  // Create artistic SVG illustrations using palette colors
-  const createIllustration = (type) => {
-    const width = 280, height = 220;
-    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" style="width:100%;height:100%;background:#0d0d0f">`;
+  const colorCards = p.map((hex, i) => {
+    const rgb = hexToRgb(hex);
+    const textColor = contrastColor(hex);
+    const [h, s, l] = hexToHsl(hex);
 
-    if (type === 1) {
-      // Human figure silhouette
-      svg += `
-        <defs>
-          <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${fill(0)};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${fill(1)};stop-opacity:0.8" />
-          </linearGradient>
-        </defs>
-        <!-- Head -->
-        <circle cx="140" cy="35" r="18" fill="${fill(0)}"/>
-        <!-- Body -->
-        <ellipse cx="140" cy="85" rx="20" ry="35" fill="url(#bodyGrad)"/>
-        <!-- Arms -->
-        <ellipse cx="110" cy="80" rx="10" ry="30" fill="${fill(1)}" opacity="0.8" transform="rotate(-25 110 80)"/>
-        <ellipse cx="170" cy="80" rx="10" ry="30" fill="${fill(1)}" opacity="0.8" transform="rotate(25 170 80)"/>
-        <!-- Legs -->
-        <rect x="130" y="115" width="8" height="35" fill="${fill(2)}"/>
-        <rect x="142" y="115" width="8" height="35" fill="${fill(2)}"/>
-        <!-- Accent: colored shape in background -->
-        <circle cx="230" cy="30" r="40" fill="${fill(3)}" opacity="0.3"/>
-        <rect x="20" y="160" width="60" height="50" fill="${fill(4)}" opacity="0.25" rx="5"/>
-      `;
-    } else if (type === 2) {
-      // Mountain landscape with sky
-      svg += `
-        <defs>
-          <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:${fill(0)};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${fill(1)};stop-opacity:0.7" />
-          </linearGradient>
-          <linearGradient id="land" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:${fill(2)};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${fill(3)};stop-opacity:0.9" />
-          </linearGradient>
-        </defs>
-        <!-- Sky -->
-        <rect width="${width}" height="${height*0.55}" fill="url(#sky)"/>
-        <!-- Mountains -->
-        <polygon points="0,${height*0.55} ${width*0.25},${height*0.25} ${width*0.5},${height*0.4} ${width*0.75},${height*0.2} ${width},${height*0.45} ${width},${height}" fill="url(#land)"/>
-        <!-- Sun/Moon -->
-        <circle cx="${width*0.15}" cy="${height*0.15}" r="20" fill="${fill(4)}" opacity="0.8"/>
-        <!-- Accent elements -->
-        <polygon points="${width*0.6},${height*0.6} ${width*0.7},${height*0.45} ${width*0.8},${height*0.6}" fill="${fill(1)}" opacity="0.5"/>
-      `;
-    } else if (type === 3) {
-      // Portrait/Face
-      svg += `
-        <defs>
-          <radialGradient id="face">
-            <stop offset="0%" style="stop-color:${fill(0)};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${fill(1)};stop-opacity:0.9" />
-          </radialGradient>
-        </defs>
-        <!-- Face -->
-        <ellipse cx="140" cy="100" rx="50" ry="65" fill="url(#face)"/>
-        <!-- Hair -->
-        <path d="M90,60 Q70,40 90,30 Q100,20 140,15 Q180,20 190,30 Q210,40 190,60" fill="${fill(2)}"/>
-        <!-- Eyes background -->
-        <ellipse cx="120" cy="85" rx="12" ry="16" fill="${fill(3)}" opacity="0.7"/>
-        <ellipse cx="160" cy="85" rx="12" ry="16" fill="${fill(3)}" opacity="0.7"/>
-        <!-- Eyes pupils -->
-        <circle cx="122" cy="87" r="5" fill="${fill(4)}"/>
-        <circle cx="162" cy="87" r="5" fill="${fill(4)}"/>
-        <!-- Mouth -->
-        <path d="M130,130 Q140,140 150,130" stroke="${fill(2)}" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <!-- Cheeks -->
-        <circle cx="90" cy="110" r="12" fill="${fill(2)}" opacity="0.4"/>
-        <circle cx="190" cy="110" r="12" fill="${fill(2)}" opacity="0.4"/>
-      `;
-    } else {
-      // Abstract artistic composition
-      svg += `
-        <defs>
-          <linearGradient id="artGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${fill(0)};stop-opacity:1" />
-            <stop offset="50%" style="stop-color:${fill(2)};stop-opacity:0.8" />
-            <stop offset="100%" style="stop-color:${fill(3)};stop-opacity:0.6" />
-          </linearGradient>
-          <filter id="softGlow">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
-          </filter>
-        </defs>
-        <!-- Large background shapes -->
-        <circle cx="70" cy="50" r="60" fill="${fill(0)}" opacity="0.6"/>
-        <rect x="150" y="80" width="100" height="100" fill="url(#artGrad1)" opacity="0.7"/>
-        <!-- Flowing organic shape -->
-        <path d="M0,150 Q70,120 140,150 T280,150 L280,220 L0,220 Z" fill="${fill(1)}" opacity="0.7" filter="url(#softGlow)"/>
-        <!-- Accent elements -->
-        <circle cx="200" cy="40" r="30" fill="${fill(4)}" opacity="0.5"/>
-        <polygon points="30,180 50,160 70,180" fill="${fill(2)}" opacity="0.6"/>
-      `;
-    }
+    // Determine icon based on color characteristics
+    const getIcon = () => {
+      if (l > 70) return '◯';        // Light colors
+      if (l < 30) return '■';        // Dark colors
+      if (s > 70) return '●';        // Saturated
+      return '◆';                    // Default
+    };
 
-    svg += `</svg>`;
-    return svg;
-  };
+    return `
+      <div class="preview-card" style="background-color:${hex};color:${textColor}">
+        <div class="preview-card-hex">${hex.toUpperCase()}</div>
+        <div class="preview-card-icon">${getIcon()}</div>
+        <div class="preview-card-rgb">
+          R ${rgb.r}<br>
+          G ${rgb.g}<br>
+          B ${rgb.b}
+        </div>
+      </div>
+    `;
+  }).join('');
 
-  grid.innerHTML = `
-    <div class="preview-card" style="padding:0;overflow:hidden;border-color:${fill(0)}40">
-      ${createIllustration(1)}
-    </div>
-
-    <div class="preview-card" style="padding:0;overflow:hidden;border-color:${fill(1)}40">
-      ${createIllustration(2)}
-    </div>
-
-    <div class="preview-card" style="padding:0;overflow:hidden;border-color:${fill(2)}40">
-      ${createIllustration(3)}
-    </div>
-
-    <div class="preview-card" style="padding:0;overflow:hidden;border-color:${fill(3)}40">
-      ${createIllustration(4)}
-    </div>
-  `;
+  grid.innerHTML = `<div class="preview-palette">${colorCards}</div>`;
 }
 
 function saveToHistory(tag) {
