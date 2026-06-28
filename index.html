@@ -1239,23 +1239,63 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  // Rectangular landscape - clean and simple
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" style="width:100%;height:auto;">`;
+  // Geometric illustration faithful to reference image
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" style="width:100%;height:auto;">`;
 
-  // Sky background - p[0]
-  svg += `<rect width="1000" height="160" fill="${p[0]}"/>`;
+  // Top sky - checkerboard pattern with p[0] and p[1]
+  svg += `<rect width="800" height="300" fill="${p[0]}"/>`;
 
-  // Sky layer 2 - p[1]
-  svg += `<rect y="120" width="1000" height="80" fill="${p[1]}"/>`;
+  // Checkerboard sky effect
+  for(let i = 0; i < 8; i++) {
+    for(let j = 0; j < 3; j++) {
+      if((i + j) % 2 === 0) {
+        svg += `<rect x="${i*100}" y="${j*100}" width="100" height="100" fill="${p[1]}" opacity="0.6"/>`;
+      }
+    }
+  }
 
-  // Far mountains - p[2]
-  svg += `<polygon points="0,180 80,130 160,160 240,110 320,150 400,100 480,140 560,120 640,160 720,130 800,170 880,140 960,180 1000,170 1000,200 0,200" fill="${p[2]}"/>`;
+  // White clouds - simple shapes
+  svg += `<ellipse cx="120" cy="80" rx="50" ry="35" fill="white"/>`;
+  svg += `<ellipse cx="100" cy="95" rx="35" ry="25" fill="white"/>`;
+  svg += `<circle cx="680" cy="100" r="45" fill="white"/>`;
+  svg += `<ellipse cx="650" cy="115" rx="40" ry="28" fill="white"/>`;
 
-  // Mid mountains - p[3]
-  svg += `<polygon points="0,200 70,160 140,190 210,160 280,195 350,165 420,195 490,170 560,200 630,175 700,205 770,180 840,210 910,185 1000,210 1000,250 0,250" fill="${p[3]}"/>`;
+  // Dark clouds/mountains - p[2]
+  svg += `<ellipse cx="150" cy="250" rx="100" ry="90" fill="${p[2]}"/>`;
+  svg += `<ellipse cx="280" cy="220" rx="110" ry="95" fill="${p[2]}"/>`;
+  svg += `<ellipse cx="650" cy="240" rx="95" ry="85" fill="${p[2]}"/>`;
+  svg += `<ellipse cx="750" cy="250" rx="80" ry="75" fill="${p[2]}"/>`;
 
-  // Foreground - p[4]
-  svg += `<polygon points="0,250 50,220 120,245 180,225 250,240 320,230 400,245 480,235 560,250 640,240 720,255 800,245 880,260 950,250 1000,260 1000,400 0,400" fill="${p[4]}"/>`;
+  // Sun - p[3] (yellow/orange)
+  svg += `<circle cx="400" cy="280" r="60" fill="${p[3]}"/>`;
+
+  // Bottom terrain - p[4] (green/teal)
+  svg += `<rect y="350" width="800" height="450" fill="${p[4]}"/>`;
+
+  // Terrain pattern blocks
+  const blockSize = 100;
+  for(let x = 0; x < 8; x++) {
+    for(let y = 3; y < 8; y++) {
+      const isGreen = (x + y) % 2 === 0;
+      const color = isGreen ? p[4] : p[1];
+      const opacity = isGreen ? 0.7 : 0.5;
+      svg += `<rect x="${x*blockSize}" y="${y*blockSize}" width="${blockSize}" height="${blockSize}" fill="${color}" opacity="${opacity}"/>`;
+    }
+  }
+
+  // Water at bottom - p[0]
+  svg += `<rect y="650" width="800" height="150" fill="${p[0]}" opacity="0.4"/>`;
+
+  // Trees - p[2] trunks
+  svg += `<rect x="200" y="500" width="15" height="80" fill="${p[2]}"/>`;
+  svg += `<polygon points="210,490 180,520 240,520" fill="${p[4]}"/>`;
+
+  svg += `<rect x="550" y="520" width="15" height="60" fill="${p[2]}"/>`;
+  svg += `<polygon points="560,510 535,545 585,545" fill="${p[4]}"/>`;
+
+  // Accent details - p[3]
+  svg += `<circle cx="400" cy="550" r="8" fill="${p[3]}" opacity="0.8"/>`;
+  svg += `<rect x="320" y="480" width="40" height="40" fill="${p[3]}" opacity="0.6"/>`;
 
   svg += `</svg>`;
 
