@@ -1239,72 +1239,32 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  // Atmospheric landscape with all 5 colors interacting naturally
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" style="width:100%;height:auto;">`;
+  // Minimalist landscape with geometric peaks
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" style="width:100%;height:auto;">`;
 
-  svg += `<defs>
-    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:${p[0]};stop-opacity:1" />
-      <stop offset="50%" style="stop-color:${p[1]};stop-opacity:0.9" />
-      <stop offset="100%" style="stop-color:${p[2]};stop-opacity:0.7" />
-    </linearGradient>
-    <radialGradient id="sunGrad" cx="50%" cy="50%">
-      <stop offset="0%" style="stop-color:${p[1]};stop-opacity:1" />
-      <stop offset="100%" style="stop-color:${p[0]};stop-opacity:0.6" />
-    </radialGradient>
-    <filter id="blur">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
-    </filter>
-  </defs>`;
+  // Sky background - p[0]
+  svg += `<rect width="600" height="280" fill="${p[0]}"/>`;
 
-  // Sky gradient background
-  svg += `<rect width="1000" height="800" fill="url(#skyGrad)"/>`;
+  // Upper sky layer - p[1]
+  svg += `<rect width="600" height="140" fill="${p[1]}"/>`;
 
-  // Sun/focal point
-  svg += `<circle cx="500" cy="200" r="120" fill="url(#sunGrad)" opacity="0.95"/>`;
-  svg += `<circle cx="500" cy="200" r="140" fill="${p[2]}" opacity="0.15" filter="url(#blur)"/>`;
+  // Sun - p[2]
+  svg += `<circle cx="420" cy="70" r="50" fill="${p[2]}"/>`;
 
-  // Far background mountains - p[3]
-  svg += `<polygon points="0,500 200,300 400,380 600,250 800,350 1000,280 1000,800 0,800" fill="${p[3]}" opacity="0.4"/>`;
+  // Back mountain layer - p[3] - tallest peaks
+  svg += `<polygon points="0,140 60,80 120,140 180,60 240,140 300,90 360,140 420,70 480,140 540,100 600,140 600,280 0,280" fill="${p[3]}"/>`;
 
-  // Mid-ground mountains - p[1] with transparency
-  svg += `<polygon points="0,550 150,380 350,450 550,350 750,420 1000,380 1000,800 0,800" fill="${p[1]}" opacity="0.5"/>`;
+  // Mid mountain layer - p[1] - medium peaks
+  svg += `<polygon points="0,160 50,120 100,160 150,110 200,160 250,130 300,160 350,140 400,160 450,135 500,160 550,145 600,160 600,280 0,280" fill="${p[1]}"/>`;
 
-  // Foreground land - p[4]
-  svg += `<polygon points="0,650 1000,600 1000,800 0,800" fill="${p[4]}" opacity="0.85"/>`;
+  // Foreground layer - p[4] - light base
+  svg += `<polygon points="0,190 40,170 80,190 120,175 160,190 200,180 240,190 280,185 320,190 360,182 400,190 440,185 480,190 520,188 560,190 600,185 600,280 0,280" fill="${p[4]}"/>`;
 
-  // Dark silhouette trees - using p[4] darker
-  // Left trees
-  svg += `<g opacity="0.7">
-    <polygon points="80,650 120,450 140,550 180,650"/>
-    <polygon points="200,650 240,420 260,550 300,650"/>
-    <polygon points="40,650 70,480 90,600 120,650"/>
-  </g>`;
+  // Forward peaks accent - p[2] - brightest highlights
+  svg += `<polygon points="100,190 130,150 160,190 250,190 280,155 310,190 400,190 430,160 460,190 550,190 570,170 600,190" fill="${p[2]}" opacity="0.8"/>`;
 
-  // Right trees
-  svg += `<g opacity="0.75">
-    <polygon points="700,650 750,430 770,550 820,650"/>
-    <polygon points="850,650 900,450 920,570 960,650"/>
-    <polygon points="920,650 960,480 980,600 1000,650"/>
-  </g>`;
-
-  // Center focal element - p[3] with glow
-  svg += `<circle cx="500" cy="520" r="80" fill="${p[3]}" opacity="0.7"/>`;
-  svg += `<circle cx="500" cy="520" r="100" fill="${p[3]}" opacity="0.2" filter="url(#blur)"/>`;
-
-  // Floating particles/light effects - p[2] and p[1]
-  svg += `<circle cx="300" cy="350" r="15" fill="${p[2]}" opacity="0.5"/>`;
-  svg += `<circle cx="700" cy="300" r="12" fill="${p[1]}" opacity="0.45"/>`;
-  svg += `<circle cx="450" cy="400" r="10" fill="${p[3]}" opacity="0.4"/>`;
-  svg += `<circle cx="650" cy="450" r="8" fill="${p[2]}" opacity="0.3"/>`;
-  svg += `<circle cx="250" cy="500" r="14" fill="${p[1]}" opacity="0.35"/>`;
-
-  // Light rays from sun - p[1]
-  svg += `<line x1="500" y1="200" x2="300" y2="600" stroke="${p[1]}" stroke-width="30" opacity="0.1"/>`;
-  svg += `<line x1="500" y1="200" x2="700" y2="600" stroke="${p[1]}" stroke-width="30" opacity="0.08"/>`;
-
-  // Additional atmospheric layer - p[0]
-  svg += `<polygon points="0,400 300,350 500,380 700,340 1000,400 1000,500 0,500" fill="${p[0]}" opacity="0.15"/>`;
+  // Additional layer depth - p[3] darker accent
+  svg += `<polygon points="0,200 70,185 140,200 280,200 350,190 420,200 600,200 600,280 0,280" fill="${p[3]}" opacity="0.6"/>`;
 
   svg += `</svg>`;
 
