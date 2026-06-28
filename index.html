@@ -1258,56 +1258,102 @@ function renderPreview() {
   const fill = i => p[i] || p[0];
   const grid = document.getElementById('previewGrid');
 
-  // Create SVG illustrations using palette colors
+  // Create artistic SVG illustrations using palette colors
   const createIllustration = (type) => {
     const width = 280, height = 220;
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" style="width:100%;height:100%;background:#0d0d0f">`;
 
     if (type === 1) {
-      // Abstract geometric composition
-      svg += `
-        <rect x="20" y="20" width="80" height="80" fill="${fill(0)}" opacity="0.9"/>
-        <circle cx="180" cy="60" r="45" fill="${fill(1)}" opacity="0.85"/>
-        <polygon points="100,150 140,200 60,200" fill="${fill(2)}" opacity="0.9"/>
-        <rect x="150" y="140" width="100" height="60" fill="${fill(3)}" opacity="0.8"/>
-        <circle cx="80" cy="140" r="20" fill="${fill(4)}" opacity="0.7"/>
-      `;
-    } else if (type === 2) {
-      // Layered waves/curves
-      svg += `
-        <path d="M0,80 Q${width/4},40 ${width/2},80 T${width},80" fill="none" stroke="${fill(0)}" stroke-width="8" opacity="0.8"/>
-        <path d="M0,110 Q${width/4},70 ${width/2},110 T${width},110" fill="none" stroke="${fill(1)}" stroke-width="8" opacity="0.7"/>
-        <path d="M0,140 Q${width/4},100 ${width/2},140 T${width},140" fill="none" stroke="${fill(2)}" stroke-width="8" opacity="0.6"/>
-        <circle cx="60" cy="40" r="25" fill="${fill(3)}" opacity="0.8"/>
-        <rect x="220" y="160" width="40" height="40" fill="${fill(4)}" opacity="0.7" rx="5"/>
-      `;
-    } else if (type === 3) {
-      // Gradient landscape
+      // Human figure silhouette
       svg += `
         <defs>
-          <linearGradient id="grad${type}" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" style="stop-color:${fill(0)};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${fill(4)};stop-opacity:0.8" />
+            <stop offset="100%" style="stop-color:${fill(1)};stop-opacity:0.8" />
           </linearGradient>
         </defs>
-        <rect width="${width}" height="${height}" fill="url(#grad${type})"/>
-        <polygon points="0,${height*0.6} ${width*0.3},${height*0.3} ${width*0.6},${height*0.5} ${width},${height*0.4} ${width},${height}" fill="${fill(1)}" opacity="0.6"/>
-        <circle cx="${width*0.2}" cy="${height*0.25}" r="30" fill="${fill(2)}" opacity="0.7"/>
-        <circle cx="${width*0.85}" cy="${height*0.3}" r="25" fill="${fill(3)}" opacity="0.6"/>
+        <!-- Head -->
+        <circle cx="140" cy="35" r="18" fill="${fill(0)}"/>
+        <!-- Body -->
+        <ellipse cx="140" cy="85" rx="20" ry="35" fill="url(#bodyGrad)"/>
+        <!-- Arms -->
+        <ellipse cx="110" cy="80" rx="10" ry="30" fill="${fill(1)}" opacity="0.8" transform="rotate(-25 110 80)"/>
+        <ellipse cx="170" cy="80" rx="10" ry="30" fill="${fill(1)}" opacity="0.8" transform="rotate(25 170 80)"/>
+        <!-- Legs -->
+        <rect x="130" y="115" width="8" height="35" fill="${fill(2)}"/>
+        <rect x="142" y="115" width="8" height="35" fill="${fill(2)}"/>
+        <!-- Accent: colored shape in background -->
+        <circle cx="230" cy="30" r="40" fill="${fill(3)}" opacity="0.3"/>
+        <rect x="20" y="160" width="60" height="50" fill="${fill(4)}" opacity="0.25" rx="5"/>
       `;
-    } else {
-      // Organic blob composition
+    } else if (type === 2) {
+      // Mountain landscape with sky
       svg += `
         <defs>
-          <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+          <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:${fill(0)};stop-opacity:1" />
+            <stop offset="100%" style="stop-color:${fill(1)};stop-opacity:0.7" />
+          </linearGradient>
+          <linearGradient id="land" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:${fill(2)};stop-opacity:1" />
+            <stop offset="100%" style="stop-color:${fill(3)};stop-opacity:0.9" />
+          </linearGradient>
+        </defs>
+        <!-- Sky -->
+        <rect width="${width}" height="${height*0.55}" fill="url(#sky)"/>
+        <!-- Mountains -->
+        <polygon points="0,${height*0.55} ${width*0.25},${height*0.25} ${width*0.5},${height*0.4} ${width*0.75},${height*0.2} ${width},${height*0.45} ${width},${height}" fill="url(#land)"/>
+        <!-- Sun/Moon -->
+        <circle cx="${width*0.15}" cy="${height*0.15}" r="20" fill="${fill(4)}" opacity="0.8"/>
+        <!-- Accent elements -->
+        <polygon points="${width*0.6},${height*0.6} ${width*0.7},${height*0.45} ${width*0.8},${height*0.6}" fill="${fill(1)}" opacity="0.5"/>
+      `;
+    } else if (type === 3) {
+      // Portrait/Face
+      svg += `
+        <defs>
+          <radialGradient id="face">
+            <stop offset="0%" style="stop-color:${fill(0)};stop-opacity:1" />
+            <stop offset="100%" style="stop-color:${fill(1)};stop-opacity:0.9" />
+          </radialGradient>
+        </defs>
+        <!-- Face -->
+        <ellipse cx="140" cy="100" rx="50" ry="65" fill="url(#face)"/>
+        <!-- Hair -->
+        <path d="M90,60 Q70,40 90,30 Q100,20 140,15 Q180,20 190,30 Q210,40 190,60" fill="${fill(2)}"/>
+        <!-- Eyes background -->
+        <ellipse cx="120" cy="85" rx="12" ry="16" fill="${fill(3)}" opacity="0.7"/>
+        <ellipse cx="160" cy="85" rx="12" ry="16" fill="${fill(3)}" opacity="0.7"/>
+        <!-- Eyes pupils -->
+        <circle cx="122" cy="87" r="5" fill="${fill(4)}"/>
+        <circle cx="162" cy="87" r="5" fill="${fill(4)}"/>
+        <!-- Mouth -->
+        <path d="M130,130 Q140,140 150,130" stroke="${fill(2)}" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Cheeks -->
+        <circle cx="90" cy="110" r="12" fill="${fill(2)}" opacity="0.4"/>
+        <circle cx="190" cy="110" r="12" fill="${fill(2)}" opacity="0.4"/>
+      `;
+    } else {
+      // Abstract artistic composition
+      svg += `
+        <defs>
+          <linearGradient id="artGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:${fill(0)};stop-opacity:1" />
+            <stop offset="50%" style="stop-color:${fill(2)};stop-opacity:0.8" />
+            <stop offset="100%" style="stop-color:${fill(3)};stop-opacity:0.6" />
+          </linearGradient>
+          <filter id="softGlow">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
           </filter>
         </defs>
-        <circle cx="70" cy="60" r="50" fill="${fill(0)}" opacity="0.8" filter="url(#blur)"/>
-        <circle cx="200" cy="80" r="45" fill="${fill(1)}" opacity="0.75" filter="url(#blur)"/>
-        <circle cx="140" cy="150" r="55" fill="${fill(2)}" opacity="0.7" filter="url(#blur)"/>
-        <ellipse cx="210" cy="160" rx="40" ry="35" fill="${fill(3)}" opacity="0.65" filter="url(#blur)"/>
-        <circle cx="50" cy="170" r="30" fill="${fill(4)}" opacity="0.6" filter="url(#blur)"/>
+        <!-- Large background shapes -->
+        <circle cx="70" cy="50" r="60" fill="${fill(0)}" opacity="0.6"/>
+        <rect x="150" y="80" width="100" height="100" fill="url(#artGrad1)" opacity="0.7"/>
+        <!-- Flowing organic shape -->
+        <path d="M0,150 Q70,120 140,150 T280,150 L280,220 L0,220 Z" fill="${fill(1)}" opacity="0.7" filter="url(#softGlow)"/>
+        <!-- Accent elements -->
+        <circle cx="200" cy="40" r="30" fill="${fill(4)}" opacity="0.5"/>
+        <polygon points="30,180 50,160 70,180" fill="${fill(2)}" opacity="0.6"/>
       `;
     }
 
