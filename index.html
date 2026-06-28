@@ -527,6 +527,54 @@ kbd {
   font-family: 'VT323', monospace;
   font-size: 0.95rem;
 }
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: 60px;
+  padding: 40px 0 20px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.social-links {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  transition: all 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.social-link:hover {
+  border-color: #ff4d6d;
+  background: rgba(255, 77, 109, 0.1);
+  box-shadow: 0 0 20px rgba(255, 77, 109, 0.3);
+  transform: translateY(-3px);
+}
+
+.social-link svg {
+  width: 24px;
+  height: 24px;
+  stroke: #ff4d6d;
+  fill: none;
+  stroke-width: 1.5;
+}
 </style>
 </head>
 <body>
@@ -607,6 +655,19 @@ kbd {
       <div style="color:var(--dim);font-family:'VT323',monospace;font-size:1rem;letter-spacing:2px;grid-column:1/-1;padding:20px 0">
         LAS PALETAS GUARDADAS APARECERÁN AQUÍ...
       </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="social-links">
+      <a href="https://www.instagram.com/lour.vbb/" target="_blank" rel="noopener noreferrer" class="social-link" title="Instagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+          <circle cx="17.5" cy="6.5" r="1.5"/>
+        </svg>
+      </a>
     </div>
   </div>
 
