@@ -816,33 +816,42 @@ const TYPES = {
     desc: 'Un solo matiz, múltiples luminosidades y saturaciones · armonía por valor',
     gen() {
       const h = randInt(0,359);
-      const baseSat = randInt(45,80);
-      const colors = [];
+      const baseSat = randInt(30,90);
+      const strategy = randInt(0, 2);
 
-      // Distribución equilibrada de luminosidad y saturación
-      const lumValues = [15, 30, 50, 70, 85];
-      const satModifiers = [0.6, 0.8, 1, 0.75, 0.5];
+      let lumValues, satModifiers;
+
+      if (strategy === 0) {
+        lumValues = [10, 25, 45, 65, 85];
+        satModifiers = [0.5, 0.7, 1, 0.8, 0.4];
+      } else if (strategy === 1) {
+        lumValues = [15, 35, 55, 70, 88];
+        satModifiers = [0.7, 0.9, 0.95, 0.6, 0.3];
+      } else {
+        lumValues = [20, 40, 60, 75, 90];
+        satModifiers = [0.6, 0.85, 1, 0.75, 0.5];
+      }
 
       return lumValues.map((l, i) => ({
-        hex: hslToHexT(h, baseSat * satModifiers[i], l)
+        hex: hslToHexT(h, Math.min(100, baseSat * satModifiers[i]), l)
       }));
     }
   },
   analogous: {
     label: 'ANÁLOGA',
-    desc: 'Colores adyacentes (30-60°) · armonía natural y cohesiva',
+    desc: 'Colores adyacentes (20-60°) · armonía natural y cohesiva',
     gen() {
       const h = randInt(0,359);
-      const baseSat = randInt(50,75);
-      const baseLum = randInt(45,65);
+      const baseSat = randInt(40,90);
+      const baseLum = randInt(35,70);
+      const spacing = randInt(15, 45);
 
-      // Hues separados 30° para máxima armonía
-      const offsets = [-30, -15, 0, 15, 30];
+      const offsets = [-spacing*2, -spacing, 0, spacing, spacing*2];
       return offsets.map(offset => {
-        const lumVar = randInt(-8, 8);
-        const satVar = randInt(-5, 5);
+        const lumVar = randInt(-12, 15);
+        const satVar = randInt(-10, 10);
         return {
-          hex: hslToHexT(h + offset, baseSat + satVar, baseLum + lumVar)
+          hex: hslToHexT(h + offset, Math.max(20, Math.min(100, baseSat + satVar)), Math.max(10, Math.min(95, baseLum + lumVar)))
         };
       });
     }
@@ -853,32 +862,45 @@ const TYPES = {
     gen() {
       const h = randInt(0,359);
       const h2 = (h + 180) % 360;
-      const baseSat = randInt(60,85);
-      const baseLum = randInt(45,60);
+      const baseSat = randInt(50,90);
+      const baseLum = randInt(40,65);
+      const strategy = randInt(0, 1);
 
-      return [
-        hslToHexT(h, baseSat, baseLum - 15),
-        hslToHexT(h, baseSat, baseLum),
-        hslToHexT(h, baseSat * 0.4, 85),
-        hslToHexT(h2, baseSat * 0.9, baseLum),
-        hslToHexT(h2, baseSat * 0.7, baseLum - 10)
-      ].map(hex => ({ hex }));
+      if (strategy === 0) {
+        return [
+          hslToHexT(h, baseSat, baseLum - 18),
+          hslToHexT(h, baseSat + randInt(-10, 10), baseLum),
+          hslToHexT(h, baseSat * 0.3, 85),
+          hslToHexT(h2, baseSat * 0.95, baseLum),
+          hslToHexT(h2, baseSat * 0.6, baseLum - 12)
+        ].map(hex => ({ hex }));
+      } else {
+        return [
+          hslToHexT(h, baseSat, baseLum - 15),
+          hslToHexT(h, baseSat * 0.5, baseLum + 15),
+          hslToHexT(h, baseSat * 0.2, 90),
+          hslToHexT(h2, baseSat * 0.85, baseLum - 5),
+          hslToHexT(h2, baseSat, baseLum + 10)
+        ].map(hex => ({ hex }));
+      }
     }
   },
   split: {
     label: 'SPLIT-COMPLEMENTARIA',
-    desc: 'Base + dos adyacentes al complementario (150°/210°) · equilibrio energético',
+    desc: 'Base + dos adyacentes al complementario · equilibrio energético',
     gen() {
       const h = randInt(0,359);
-      const baseSat = randInt(55,75);
-      const baseLum = randInt(45,60);
+      const offset1 = randInt(140, 160);
+      const offset2 = randInt(200, 220);
+      const baseSat = randInt(50,85);
+      const baseLum = randInt(40,65);
 
       return [
         hslToHexT(h, baseSat, baseLum),
-        hslToHexT(h, baseSat * 0.5, baseLum + 18),
-        hslToHexT(h + 150, baseSat * 0.85, baseLum),
-        hslToHexT(h + 210, baseSat * 0.85, baseLum),
-        hslToHexT(h + 180, baseSat * 0.4, 82)
+        hslToHexT(h, baseSat * 0.4, baseLum + 20),
+        hslToHexT(h + offset1, baseSat * 0.85, baseLum - randInt(0, 10)),
+        hslToHexT(h + offset2, baseSat * 0.8, baseLum - randInt(0, 10)),
+        hslToHexT((h + 180) % 360, baseSat * 0.35, 80 + randInt(-5, 5))
       ].map(hex => ({ hex }));
     }
   },
@@ -887,15 +909,16 @@ const TYPES = {
     desc: 'Tres colores equidistantes (120°) · vívida pero equilibrada',
     gen() {
       const h = randInt(0,359);
-      const baseSat = randInt(60,80);
-      const baseLum = randInt(45,60);
+      const baseSat = randInt(55,90);
+      const baseLum = randInt(40,65);
+      const lumShift = randInt(-15, 15);
 
       return [
         hslToHexT(h, baseSat, baseLum),
-        hslToHexT(h, baseSat * 0.5, baseLum + 20),
-        hslToHexT(h + 120, baseSat * 0.9, baseLum),
-        hslToHexT(h + 240, baseSat * 0.9, baseLum),
-        hslToHexT(h + 120, baseSat * 0.6, baseLum - 15)
+        hslToHexT(h, baseSat * 0.4, baseLum + 22),
+        hslToHexT(h + 120, baseSat * 0.95, baseLum + lumShift),
+        hslToHexT(h + 240, baseSat * 0.9, baseLum + lumShift),
+        hslToHexT((h + 60) % 360, baseSat * 0.5, baseLum - 18)
       ].map(hex => ({ hex }));
     }
   },
@@ -904,15 +927,16 @@ const TYPES = {
     desc: 'Rectángulo en el círculo (60°/120°/180°) · compleja pero armónica',
     gen() {
       const h = randInt(0,359);
-      const baseSat = randInt(55,75);
-      const baseLum = randInt(45,60);
+      const rotation = randInt(40, 80);
+      const baseSat = randInt(50,80);
+      const baseLum = randInt(40,60);
 
       return [
         hslToHexT(h, baseSat, baseLum),
-        hslToHexT(h + 60, baseSat * 0.8, baseLum - 5),
+        hslToHexT(h + rotation, baseSat * 0.8, baseLum - randInt(2, 8)),
         hslToHexT(h + 180, baseSat * 0.85, baseLum),
-        hslToHexT(h + 240, baseSat * 0.8, baseLum - 5),
-        hslToHexT(h, baseSat * 0.3, 88)
+        hslToHexT(h + 180 + rotation, baseSat * 0.75, baseLum - randInt(2, 8)),
+        hslToHexT(h + 90, baseSat * 0.2, 88)
       ].map(hex => ({ hex }));
     }
   },
@@ -921,15 +945,16 @@ const TYPES = {
     desc: 'Cuatro colores separados 90° · máxima simetría cromática',
     gen() {
       const h = randInt(0,359);
-      const baseSat = randInt(60,80);
-      const baseLum = randInt(48,62);
+      const baseSat = randInt(55,90);
+      const baseLum = randInt(45,65);
+      const lumVar = randInt(-8, 8);
 
       return [
-        hslToHexT(h, baseSat, baseLum),
-        hslToHexT(h + 90, baseSat, baseLum),
-        hslToHexT(h + 180, baseSat, baseLum),
-        hslToHexT(h + 270, baseSat, baseLum),
-        hslToHexT(h, 15, 92)
+        hslToHexT(h, baseSat, baseLum + lumVar),
+        hslToHexT(h + 90, baseSat, baseLum - lumVar),
+        hslToHexT(h + 180, baseSat, baseLum + lumVar),
+        hslToHexT(h + 270, baseSat, baseLum - lumVar),
+        hslToHexT(h + 45, 10, 92)
       ].map(hex => ({ hex }));
     }
   },
@@ -938,10 +963,11 @@ const TYPES = {
     desc: 'Baja saturación, alta luminosidad · suave y accesible',
     gen() {
       const h = randInt(0,359);
-      const offsets = [0, 60, 130, 210, 290];
+      const baseHueOffset = randInt(20, 70);
+      const offsets = [0, baseHueOffset, baseHueOffset*2, 180 + randInt(-30, 30), 250 + randInt(-30, 30)];
 
       return offsets.map(offset => ({
-        hex: hslToHexT(h + offset, randInt(30,50), randInt(75,88))
+        hex: hslToHexT(h + offset, randInt(20, 55), randInt(72, 92))
       }));
     }
   },
@@ -950,12 +976,13 @@ const TYPES = {
     desc: 'Saturación máxima, luminosidad media · eléctrico y vibrante',
     gen() {
       const h = randInt(0,359);
-      const offsets = [0, 72, 144, 216, 288];
+      const spacing = randInt(60, 80);
+      const offsets = [0, spacing, spacing*2, spacing*3, spacing*4];
 
       const colors = offsets.map((offset, i) =>
-        hslToHexT(h + offset, 100, 55 + randInt(-3, 3))
+        hslToHexT(h + offset, 100, 52 + randInt(-5, 8))
       );
-      colors[2] = hslToHexT((h + 144) % 360, 20, 10); // Dark accent
+      colors[Math.floor(colors.length/2)] = hslToHexT((h + offsets[Math.floor(offsets.length/2)]) % 360, 15, 8);
       return colors.map(hex => ({ hex }));
     }
   },
@@ -963,17 +990,17 @@ const TYPES = {
     label: 'TIERRAS',
     desc: 'Tonos cálidos desaturados · orgánico y natural',
     gen() {
-      // Hues basados en rangos de tierra (marrones, ocres, terracota)
+      const baseH = randInt(0, 50);
       const baseHues = [
-        randInt(0, 30),   // Rojo-marrón
-        randInt(25, 45),  // Terracota-naranja
-        randInt(40, 60),  // Ocre-amarillo
-        randInt(15, 35),  // Marrón oscuro
-        randInt(35, 50)   // Ocre claro
+        baseH + randInt(-10, 10),
+        baseH + randInt(15, 35),
+        baseH + randInt(35, 60),
+        baseH + randInt(-15, 5),
+        baseH + randInt(20, 50)
       ];
 
       return baseHues.map((h, i) => ({
-        hex: hslToHexT(h, randInt(35, 65), randInt(30 + i*10, 50 + i*8))
+        hex: hslToHexT(h, randInt(30, 70), randInt(25 + i*8, 50 + i*5))
       }));
     }
   },
@@ -982,15 +1009,15 @@ const TYPES = {
     desc: 'Tonos profundos con acento · dramática y sofisticada',
     gen() {
       const h = randInt(0,359);
-      const accentH = (h + 180) % 360;
-      const baseSat = randInt(35,65);
+      const accentH = (h + randInt(160, 200)) % 360;
+      const baseSat = randInt(35,70);
 
       return [
-        hslToHexT(h, baseSat * 0.7, 10),
-        hslToHexT(h, baseSat * 0.6, 18),
-        hslToHexT(h, baseSat, 32),
-        hslToHexT(accentH, randInt(75, 95), 58),
-        hslToHexT(h, 8, 85)
+        hslToHexT(h, baseSat * 0.6, randInt(5, 15)),
+        hslToHexT(h, baseSat * 0.5, randInt(15, 25)),
+        hslToHexT(h, baseSat, randInt(28, 38)),
+        hslToHexT(accentH, randInt(70, 100), randInt(55, 70)),
+        hslToHexT(h, 5, randInt(80, 90))
       ].map(hex => ({ hex }));
     }
   },
@@ -999,12 +1026,12 @@ const TYPES = {
     desc: 'Saturación media, luminosidad variable · nostálgica y armónica',
     gen() {
       const h = randInt(0,359);
-      const baseSat = randInt(30,55);
-      const baseLum = randInt(50,70);
-      const offsets = [0, 40, 90, 180, 260];
+      const baseSat = randInt(25,60);
+      const baseLum = randInt(45,75);
+      const hueSpacing = randInt(35, 95);
 
-      return offsets.map(offset => ({
-        hex: hslToHexT(h + offset, baseSat + randInt(-8, 8), baseLum + randInt(-12, 12))
+      return [0, 1, 2, 3, 4].map(i => ({
+        hex: hslToHexT(h + hueSpacing * i, baseSat + randInt(-15, 15), baseLum + randInt(-18, 18))
       }));
     }
   },
