@@ -1239,63 +1239,33 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  // Geometric illustration faithful to reference image
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" style="width:100%;height:auto;">`;
+  // Simple clean palette display with colors and info
+  const blockWidth = 100 / p.length;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" style="width:100%;height:auto;">`;
+  svg += `<rect width="1000" height="300" fill="#0d0d0f"/>`;
 
-  // Top sky - checkerboard pattern with p[0] and p[1]
-  svg += `<rect width="800" height="300" fill="${p[0]}"/>`;
+  p.forEach((color, i) => {
+    const xStart = (i / p.length) * 1000;
+    const blockW = blockWidth / 100 * 1000;
+    const rgb = hexToRgb(color);
+    const textColor = contrastColor(color);
 
-  // Checkerboard sky effect
-  for(let i = 0; i < 8; i++) {
-    for(let j = 0; j < 3; j++) {
-      if((i + j) % 2 === 0) {
-        svg += `<rect x="${i*100}" y="${j*100}" width="100" height="100" fill="${p[1]}" opacity="0.6"/>`;
-      }
+    // Color block
+    svg += `<rect x="${xStart}" y="0" width="${blockW}" height="300" fill="${color}"/>`;
+
+    // Hex code
+    svg += `<text x="${xStart + blockW/2}" y="40" text-anchor="middle" font-family="'VT323',monospace" font-size="20" letter-spacing="1" fill="${textColor}" opacity="0.95">${color.toUpperCase()}</text>`;
+
+    // Separator line
+    if (i < p.length - 1) {
+      svg += `<line x1="${xStart + blockW}" y1="0" x2="${xStart + blockW}" y2="300" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>`;
     }
-  }
 
-  // White clouds - simple shapes
-  svg += `<ellipse cx="120" cy="80" rx="50" ry="35" fill="white"/>`;
-  svg += `<ellipse cx="100" cy="95" rx="35" ry="25" fill="white"/>`;
-  svg += `<circle cx="680" cy="100" r="45" fill="white"/>`;
-  svg += `<ellipse cx="650" cy="115" rx="40" ry="28" fill="white"/>`;
-
-  // Dark clouds/mountains - p[2]
-  svg += `<ellipse cx="150" cy="250" rx="100" ry="90" fill="${p[2]}"/>`;
-  svg += `<ellipse cx="280" cy="220" rx="110" ry="95" fill="${p[2]}"/>`;
-  svg += `<ellipse cx="650" cy="240" rx="95" ry="85" fill="${p[2]}"/>`;
-  svg += `<ellipse cx="750" cy="250" rx="80" ry="75" fill="${p[2]}"/>`;
-
-  // Sun - p[3] (yellow/orange)
-  svg += `<circle cx="400" cy="280" r="60" fill="${p[3]}"/>`;
-
-  // Bottom terrain - p[4] (green/teal)
-  svg += `<rect y="350" width="800" height="450" fill="${p[4]}"/>`;
-
-  // Terrain pattern blocks
-  const blockSize = 100;
-  for(let x = 0; x < 8; x++) {
-    for(let y = 3; y < 8; y++) {
-      const isGreen = (x + y) % 2 === 0;
-      const color = isGreen ? p[4] : p[1];
-      const opacity = isGreen ? 0.7 : 0.5;
-      svg += `<rect x="${x*blockSize}" y="${y*blockSize}" width="${blockSize}" height="${blockSize}" fill="${color}" opacity="${opacity}"/>`;
-    }
-  }
-
-  // Water at bottom - p[0]
-  svg += `<rect y="650" width="800" height="150" fill="${p[0]}" opacity="0.4"/>`;
-
-  // Trees - p[2] trunks
-  svg += `<rect x="200" y="500" width="15" height="80" fill="${p[2]}"/>`;
-  svg += `<polygon points="210,490 180,520 240,520" fill="${p[4]}"/>`;
-
-  svg += `<rect x="550" y="520" width="15" height="60" fill="${p[2]}"/>`;
-  svg += `<polygon points="560,510 535,545 585,545" fill="${p[4]}"/>`;
-
-  // Accent details - p[3]
-  svg += `<circle cx="400" cy="550" r="8" fill="${p[3]}" opacity="0.8"/>`;
-  svg += `<rect x="320" y="480" width="40" height="40" fill="${p[3]}" opacity="0.6"/>`;
+    // RGB values
+    svg += `<text x="${xStart + blockW/2}" y="150" text-anchor="middle" font-family="'VT323',monospace" font-size="16" letter-spacing="1" fill="${textColor}" opacity="0.8">R ${rgb.r}</text>`;
+    svg += `<text x="${xStart + blockW/2}" y="175" text-anchor="middle" font-family="'VT323',monospace" font-size="16" letter-spacing="1" fill="${textColor}" opacity="0.8">G ${rgb.g}</text>`;
+    svg += `<text x="${xStart + blockW/2}" y="200" text-anchor="middle" font-family="'VT323',monospace" font-size="16" letter-spacing="1" fill="${textColor}" opacity="0.8">B ${rgb.b}</text>`;
+  });
 
   svg += `</svg>`;
 
