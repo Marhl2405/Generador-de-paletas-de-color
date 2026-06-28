@@ -1239,59 +1239,49 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  // Create a single horizontal palette visualization
-  const blockWidth = 100 / p.length;
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 350" style="width:100%;height:auto;">`;
-  svg += `<rect width="1000" height="350" fill="#0d0d0f"/>`;
+  // Professional single composition with all colors interacting
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" style="width:100%;height:auto;">`;
 
-  p.forEach((color, i) => {
-    const xStart = (i / p.length) * 1000;
-    const blockW = blockWidth / 100 * 1000;
-    const rgb = hexToRgb(color);
-    const textColor = contrastColor(color);
-    const isLight = contrastColor(color) === '#0d0d0f' ? true : false;
+  // Background
+  svg += `<defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d0d0f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a20;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>`;
 
-    // Color block
-    svg += `<rect x="${xStart}" y="0" width="${blockW}" height="350" fill="${color}"/>`;
+  svg += `<rect width="1200" height="500" fill="url(#bgGrad)"/>`;
 
-    // Hex code at top
-    svg += `<text x="${xStart + blockW/2}" y="35" text-anchor="middle" font-family="'VT323',monospace" font-size="18" letter-spacing="1" fill="${textColor}" opacity="0.9">${color.toUpperCase()}</text>`;
+  // Main layout: Left section with large shapes, right section with accent
 
-    // Separator line
-    if (i < p.length - 1) {
-      svg += `<line x1="${xStart + blockW}" y1="0" x2="${xStart + blockW}" y2="350" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>`;
-    }
+  // Large organic shape 1 - p[0]
+  svg += `<ellipse cx="200" cy="150" rx="120" ry="140" fill="${p[0]}" opacity="0.9" filter="url(#shadow)"/>`;
 
-    // Simple icon shapes (contrasting with the color)
-    const iconX = xStart + blockW * 0.3;
-    const iconY = 120;
-    const iconSize = blockW * 0.4;
+  // Large organic shape 2 - p[1]
+  svg += `<path d="M 400 50 Q 500 30, 580 80 L 600 200 Q 550 280, 420 250 Q 350 200, 400 50" fill="${p[1]}" opacity="0.85" filter="url(#shadow)"/>`;
 
-    // Create geometric shapes as icons
-    if (i % 3 === 0) {
-      // Rounded rectangle
-      svg += `<rect x="${iconX}" y="${iconY}" width="${iconSize * 0.5}" height="${iconSize}" rx="${iconSize * 0.15}" fill="${textColor}" opacity="0.85"/>`;
-      // Circle
-      svg += `<circle cx="${iconX + iconSize * 0.75}" cy="${iconY + iconSize * 0.35}" r="${iconSize * 0.2}" fill="${textColor}" opacity="0.85"/>`;
-    } else if (i % 3 === 1) {
-      // Vertical rectangle
-      svg += `<rect x="${iconX + iconSize * 0.1}" y="${iconY + iconSize * 0.1}" width="${iconSize * 0.35}" height="${iconSize * 0.8}" fill="${textColor}" opacity="0.85"/>`;
-      // Filled square
-      svg += `<rect x="${iconX + iconSize * 0.55}" y="${iconY + iconSize * 0.5}" width="${iconSize * 0.35}" height="${iconSize * 0.4}" fill="${textColor}" opacity="0.85"/>`;
-    } else {
-      // Rounded shape 1
-      svg += `<path d="M${iconX} ${iconY + iconSize*0.2} L${iconX + iconSize*0.4} ${iconY} L${iconX + iconSize*0.4} ${iconY + iconSize} L${iconX} ${iconY + iconSize*0.8} Q${iconX - iconSize*0.1} ${iconY + iconSize*0.5} ${iconX} ${iconY + iconSize*0.2}" fill="${textColor}" opacity="0.85"/>`;
-      // Small circle
-      svg += `<circle cx="${iconX + iconSize * 0.7}" cy="${iconY + iconSize * 0.5}" r="${iconSize * 0.2}" fill="${textColor}" opacity="0.85"/>`;
-    }
+  // Geometric rectangle - p[2]
+  svg += `<rect x="700" y="80" width="180" height="240" fill="${p[2]}" opacity="0.88" rx="10" filter="url(#shadow)"/>`;
 
-    // RGB values at bottom
-    const rgbText = `R ${rgb.r}\nG ${rgb.g}\nB ${rgb.b}`;
-    const lines = rgbText.split('\n');
-    lines.forEach((line, lineIdx) => {
-      svg += `<text x="${xStart + blockW/2}" y="${280 + lineIdx * 25}" text-anchor="middle" font-family="'VT323',monospace" font-size="16" letter-spacing="1" fill="${textColor}" opacity="0.75">${line}</text>`;
-    });
-  });
+  // Accent circle overlapping - p[3]
+  svg += `<circle cx="950" cy="250" r="95" fill="${p[3]}" opacity="0.9" filter="url(#shadow)"/>`;
+
+  // Flowing wave shape - p[4]
+  svg += `<path d="M 0 350 Q 150 300, 300 350 T 600 350 T 900 350 T 1200 350 L 1200 500 L 0 500 Z" fill="${p[4]}" opacity="0.87"/>`;
+
+  // Add subtle interaction elements
+  // Overlapping semi-transparent circles to show color mixing
+  svg += `<circle cx="350" cy="200" r="60" fill="${p[1]}" opacity="0.3"/>`;
+  svg += `<circle cx="280" cy="280" r="50" fill="${p[4]}" opacity="0.25"/>`;
+  svg += `<circle cx="820" cy="180" r="70" fill="${p[0]}" opacity="0.2"/>`;
+  svg += `<circle cx="1000" cy="350" r="80" fill="${p[2]}" opacity="0.2"/>`;
+
+  // Accent lines showing composition flow
+  svg += `<line x1="200" y1="290" x2="950" y2="350" stroke="${p[3]}" stroke-width="2" opacity="0.4"/>`;
+  svg += `<line x1="580" y1="250" x2="700" y2="200" stroke="${p[0]}" stroke-width="2" opacity="0.3"/>`;
 
   svg += `</svg>`;
 
