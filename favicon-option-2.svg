@@ -1,0 +1,10 @@
+<!-- OPCIÓN 3: Pincelada Dinámica -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#0d0d0f" stroke="#2a2a35" stroke-width="1"/>
+  <!-- Trazo de pincel dinámico -->
+  <path d="M 20 60 Q 35 20, 60 30 T 85 70" stroke="#FF4D6D" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- Segundo trazo para profundidad -->
+  <path d="M 25 65 Q 40 25, 65 35 T 80 75" stroke="#00FFE5" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <!-- Pequeño círculo de acento -->
+  <circle cx="60" cy="30" r="3" fill="#FFD700"/>
+</svg>

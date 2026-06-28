@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CHROMATICA — Generador de Paletas</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -975,9 +976,10 @@ function toggleLock(i) {
 }
 
 function copySwatch(hex) {
-  navigator.clipboard.writeText(hex).catch(() => {});
+  const hexToCopy = hex.slice(1);
+  navigator.clipboard.writeText(hexToCopy).catch(() => {});
   const toast = document.getElementById('toast');
-  toast.textContent = hex.toUpperCase() + ' — ' + (L().toastCopied || 'COPIED ✓');
+  toast.textContent = hexToCopy.toUpperCase() + ' — ' + (L().toastCopied || 'COPIED ✓');
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 1800);
 }
