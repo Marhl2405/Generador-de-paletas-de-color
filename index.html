@@ -531,19 +531,25 @@ kbd {
 /* ── FOOTER ── */
 .footer {
   margin-top: 60px;
-  padding: 40px 0 20px;
+  padding: 20px 0;
   border-top: 1px solid var(--border);
-  text-align: center;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 20px;
 }
 
+.footer-text {
+  font-family: 'VT323', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 3px;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
 .social-links {
   display: flex;
-  gap: 20px;
-  justify-content: center;
+  gap: 15px;
   align-items: center;
 }
 
@@ -551,11 +557,11 @@ kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
-  background: var(--panel);
+  width: 40px;
+  height: 40px;
+  background: transparent;
   border: 1px solid var(--border);
-  border-radius: 50%;
+  border-radius: 4px;
   transition: all 0.2s;
   cursor: pointer;
   text-decoration: none;
@@ -563,14 +569,13 @@ kbd {
 
 .social-link:hover {
   border-color: #ff4d6d;
-  background: rgba(255, 77, 109, 0.1);
-  box-shadow: 0 0 20px rgba(255, 77, 109, 0.3);
-  transform: translateY(-3px);
+  background: rgba(255, 77, 109, 0.08);
+  box-shadow: 0 0 15px rgba(255, 77, 109, 0.2);
 }
 
 .social-link svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   stroke: #ff4d6d;
   fill: none;
   stroke-width: 1.5;
@@ -660,6 +665,7 @@ kbd {
 
   <!-- Footer -->
   <div class="footer">
+    <div class="footer-text">CHROMATICA · GENERADOR DE PALETAS</div>
     <div class="social-links">
       <a href="https://www.instagram.com/lour.vbb/" target="_blank" rel="noopener noreferrer" class="social-link" title="Instagram">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
