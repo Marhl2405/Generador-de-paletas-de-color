@@ -1239,49 +1239,72 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  // Professional single composition with all colors interacting
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" style="width:100%;height:auto;">`;
+  // Atmospheric landscape with all 5 colors interacting naturally
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" style="width:100%;height:auto;">`;
 
-  // Background
   svg += `<defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0d0d0f;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1a1a20;stop-opacity:1" />
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:${p[0]};stop-opacity:1" />
+      <stop offset="50%" style="stop-color:${p[1]};stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:${p[2]};stop-opacity:0.7" />
     </linearGradient>
-    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    <radialGradient id="sunGrad" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:${p[1]};stop-opacity:1" />
+      <stop offset="100%" style="stop-color:${p[0]};stop-opacity:0.6" />
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
     </filter>
   </defs>`;
 
-  svg += `<rect width="1200" height="500" fill="url(#bgGrad)"/>`;
+  // Sky gradient background
+  svg += `<rect width="1000" height="800" fill="url(#skyGrad)"/>`;
 
-  // Main layout: Left section with large shapes, right section with accent
+  // Sun/focal point
+  svg += `<circle cx="500" cy="200" r="120" fill="url(#sunGrad)" opacity="0.95"/>`;
+  svg += `<circle cx="500" cy="200" r="140" fill="${p[2]}" opacity="0.15" filter="url(#blur)"/>`;
 
-  // Large organic shape 1 - p[0]
-  svg += `<ellipse cx="200" cy="150" rx="120" ry="140" fill="${p[0]}" opacity="0.9" filter="url(#shadow)"/>`;
+  // Far background mountains - p[3]
+  svg += `<polygon points="0,500 200,300 400,380 600,250 800,350 1000,280 1000,800 0,800" fill="${p[3]}" opacity="0.4"/>`;
 
-  // Large organic shape 2 - p[1]
-  svg += `<path d="M 400 50 Q 500 30, 580 80 L 600 200 Q 550 280, 420 250 Q 350 200, 400 50" fill="${p[1]}" opacity="0.85" filter="url(#shadow)"/>`;
+  // Mid-ground mountains - p[1] with transparency
+  svg += `<polygon points="0,550 150,380 350,450 550,350 750,420 1000,380 1000,800 0,800" fill="${p[1]}" opacity="0.5"/>`;
 
-  // Geometric rectangle - p[2]
-  svg += `<rect x="700" y="80" width="180" height="240" fill="${p[2]}" opacity="0.88" rx="10" filter="url(#shadow)"/>`;
+  // Foreground land - p[4]
+  svg += `<polygon points="0,650 1000,600 1000,800 0,800" fill="${p[4]}" opacity="0.85"/>`;
 
-  // Accent circle overlapping - p[3]
-  svg += `<circle cx="950" cy="250" r="95" fill="${p[3]}" opacity="0.9" filter="url(#shadow)"/>`;
+  // Dark silhouette trees - using p[4] darker
+  // Left trees
+  svg += `<g opacity="0.7">
+    <polygon points="80,650 120,450 140,550 180,650"/>
+    <polygon points="200,650 240,420 260,550 300,650"/>
+    <polygon points="40,650 70,480 90,600 120,650"/>
+  </g>`;
 
-  // Flowing wave shape - p[4]
-  svg += `<path d="M 0 350 Q 150 300, 300 350 T 600 350 T 900 350 T 1200 350 L 1200 500 L 0 500 Z" fill="${p[4]}" opacity="0.87"/>`;
+  // Right trees
+  svg += `<g opacity="0.75">
+    <polygon points="700,650 750,430 770,550 820,650"/>
+    <polygon points="850,650 900,450 920,570 960,650"/>
+    <polygon points="920,650 960,480 980,600 1000,650"/>
+  </g>`;
 
-  // Add subtle interaction elements
-  // Overlapping semi-transparent circles to show color mixing
-  svg += `<circle cx="350" cy="200" r="60" fill="${p[1]}" opacity="0.3"/>`;
-  svg += `<circle cx="280" cy="280" r="50" fill="${p[4]}" opacity="0.25"/>`;
-  svg += `<circle cx="820" cy="180" r="70" fill="${p[0]}" opacity="0.2"/>`;
-  svg += `<circle cx="1000" cy="350" r="80" fill="${p[2]}" opacity="0.2"/>`;
+  // Center focal element - p[3] with glow
+  svg += `<circle cx="500" cy="520" r="80" fill="${p[3]}" opacity="0.7"/>`;
+  svg += `<circle cx="500" cy="520" r="100" fill="${p[3]}" opacity="0.2" filter="url(#blur)"/>`;
 
-  // Accent lines showing composition flow
-  svg += `<line x1="200" y1="290" x2="950" y2="350" stroke="${p[3]}" stroke-width="2" opacity="0.4"/>`;
-  svg += `<line x1="580" y1="250" x2="700" y2="200" stroke="${p[0]}" stroke-width="2" opacity="0.3"/>`;
+  // Floating particles/light effects - p[2] and p[1]
+  svg += `<circle cx="300" cy="350" r="15" fill="${p[2]}" opacity="0.5"/>`;
+  svg += `<circle cx="700" cy="300" r="12" fill="${p[1]}" opacity="0.45"/>`;
+  svg += `<circle cx="450" cy="400" r="10" fill="${p[3]}" opacity="0.4"/>`;
+  svg += `<circle cx="650" cy="450" r="8" fill="${p[2]}" opacity="0.3"/>`;
+  svg += `<circle cx="250" cy="500" r="14" fill="${p[1]}" opacity="0.35"/>`;
+
+  // Light rays from sun - p[1]
+  svg += `<line x1="500" y1="200" x2="300" y2="600" stroke="${p[1]}" stroke-width="30" opacity="0.1"/>`;
+  svg += `<line x1="500" y1="200" x2="700" y2="600" stroke="${p[1]}" stroke-width="30" opacity="0.08"/>`;
+
+  // Additional atmospheric layer - p[0]
+  svg += `<polygon points="0,400 300,350 500,380 700,340 1000,400 1000,500 0,500" fill="${p[0]}" opacity="0.15"/>`;
 
   svg += `</svg>`;
 
