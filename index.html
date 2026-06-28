@@ -1239,68 +1239,63 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  const createCompositions = () => {
-    const illustrations = [];
-    const w = 400, h = 280;
+  // Create a single horizontal palette visualization
+  const blockWidth = 100 / p.length;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 350" style="width:100%;height:auto;">`;
+  svg += `<rect width="1000" height="350" fill="#0d0d0f"/>`;
 
-    // Illustration 1: Layered geometric shapes showing color interaction
-    let svg1 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;
-    svg1 += `<rect width="${w}" height="${h}" fill="#0d0d0f"/>`;
-    svg1 += `<rect x="20" y="20" width="80" height="120" fill="${p[0]}" opacity="0.9"/>`;
-    svg1 += `<rect x="110" y="40" width="90" height="140" fill="${p[1]}" opacity="0.85"/>`;
-    svg1 += `<circle cx="280" cy="80" r="50" fill="${p[2]}" opacity="0.8"/>`;
-    svg1 += `<polygon points="320,160 360,220 280,220" fill="${p[3]}" opacity="0.85"/>`;
-    svg1 += `<circle cx="150" cy="200" r="30" fill="${p[4]}" opacity="0.75"/>`;
-    svg1 += `</svg>`;
-    illustrations.push(svg1);
+  p.forEach((color, i) => {
+    const xStart = (i / p.length) * 1000;
+    const blockW = blockWidth / 100 * 1000;
+    const rgb = hexToRgb(color);
+    const textColor = contrastColor(color);
+    const isLight = contrastColor(color) === '#0d0d0f' ? true : false;
 
-    // Illustration 2: Artistic scene with all colors
-    let svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;
-    svg2 += `<defs>`;
-    svg2 += `<linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">`;
-    svg2 += `<stop offset="0%" style="stop-color:${p[0]};stop-opacity:1" />`;
-    svg2 += `<stop offset="100%" style="stop-color:${p[1]};stop-opacity:0.8" />`;
-    svg2 += `</linearGradient>`;
-    svg2 += `</defs>`;
-    svg2 += `<rect width="${w}" height="${h}" fill="url(#grad1)"/>`;
-    svg2 += `<polygon points="0,180 ${w*0.3},140 ${w*0.6},160 ${w},100 ${w},${h}" fill="${p[2]}" opacity="0.7"/>`;
-    svg2 += `<circle cx="${w*0.2}" cy="100" r="35" fill="${p[3]}" opacity="0.8"/>`;
-    svg2 += `<ellipse cx="${w*0.8}" cy="140" rx="45" ry="50" fill="${p[4]}" opacity="0.7"/>`;
-    svg2 += `<rect x="${w*0.35}" y="200" width="100" height="60" fill="${p[2]}" opacity="0.6"/>`;
-    svg2 += `</svg>`;
-    illustrations.push(svg2);
+    // Color block
+    svg += `<rect x="${xStart}" y="0" width="${blockW}" height="350" fill="${color}"/>`;
 
-    // Illustration 3: Modern abstract composition
-    let svg3 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;
-    svg3 += `<rect width="${w}" height="${h}" fill="#0d0d0f"/>`;
-    svg3 += `<rect x="0" y="0" width="${w*0.4}" height="${h}" fill="${p[0]}"/>`;
-    svg3 += `<rect x="${w*0.4}" y="0" width="${w*0.25}" height="${h*0.6}" fill="${p[1]}"/>`;
-    svg3 += `<rect x="${w*0.4}" y="${h*0.6}" width="${w*0.25}" height="${h*0.4}" fill="${p[3]}"/>`;
-    svg3 += `<rect x="${w*0.65}" y="0" width="${w*0.35}" height="${h}" fill="${p[2]}"/>`;
-    svg3 += `<circle cx="${w*0.5}" cy="${h*0.5}" r="45" fill="${p[4]}" opacity="0.9"/>`;
-    svg3 += `</svg>`;
-    illustrations.push(svg3);
+    // Hex code at top
+    svg += `<text x="${xStart + blockW/2}" y="35" text-anchor="middle" font-family="'VT323',monospace" font-size="18" letter-spacing="1" fill="${textColor}" opacity="0.9">${color.toUpperCase()}</text>`;
 
-    // Illustration 4: Organic flowing design
-    let svg4 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">`;
-    svg4 += `<rect width="${w}" height="${h}" fill="#0d0d0f"/>`;
-    svg4 += `<path d="M0,100 Q${w*0.25},50 ${w*0.5},100 T${w},100 L${w},${h} L0,${h}" fill="${p[0]}" opacity="0.8"/>`;
-    svg4 += `<path d="M0,140 Q${w*0.25},100 ${w*0.5},140 T${w},140 L${w},${h} L0,${h}" fill="${p[1]}" opacity="0.7"/>`;
-    svg4 += `<circle cx="${w*0.15}" cy="60" r="40" fill="${p[2]}" opacity="0.75"/>`;
-    svg4 += `<circle cx="${w*0.85}" cy="80" r="35" fill="${p[3]}" opacity="0.7"/>`;
-    svg4 += `<polygon points="${w*0.5},160 ${w*0.35},220 ${w*0.65},220" fill="${p[4]}" opacity="0.8"/>`;
-    svg4 += `</svg>`;
-    illustrations.push(svg4);
+    // Separator line
+    if (i < p.length - 1) {
+      svg += `<line x1="${xStart + blockW}" y1="0" x2="${xStart + blockW}" y2="350" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>`;
+    }
 
-    return illustrations;
-  };
+    // Simple icon shapes (contrasting with the color)
+    const iconX = xStart + blockW * 0.3;
+    const iconY = 120;
+    const iconSize = blockW * 0.4;
 
-  const illustrations = createCompositions();
-  const illustrationHtml = illustrations.map(svg =>
-    `<div class="preview-illustration">${svg}</div>`
-  ).join('');
+    // Create geometric shapes as icons
+    if (i % 3 === 0) {
+      // Rounded rectangle
+      svg += `<rect x="${iconX}" y="${iconY}" width="${iconSize * 0.5}" height="${iconSize}" rx="${iconSize * 0.15}" fill="${textColor}" opacity="0.85"/>`;
+      // Circle
+      svg += `<circle cx="${iconX + iconSize * 0.75}" cy="${iconY + iconSize * 0.35}" r="${iconSize * 0.2}" fill="${textColor}" opacity="0.85"/>`;
+    } else if (i % 3 === 1) {
+      // Vertical rectangle
+      svg += `<rect x="${iconX + iconSize * 0.1}" y="${iconY + iconSize * 0.1}" width="${iconSize * 0.35}" height="${iconSize * 0.8}" fill="${textColor}" opacity="0.85"/>`;
+      // Filled square
+      svg += `<rect x="${iconX + iconSize * 0.55}" y="${iconY + iconSize * 0.5}" width="${iconSize * 0.35}" height="${iconSize * 0.4}" fill="${textColor}" opacity="0.85"/>`;
+    } else {
+      // Rounded shape 1
+      svg += `<path d="M${iconX} ${iconY + iconSize*0.2} L${iconX + iconSize*0.4} ${iconY} L${iconX + iconSize*0.4} ${iconY + iconSize} L${iconX} ${iconY + iconSize*0.8} Q${iconX - iconSize*0.1} ${iconY + iconSize*0.5} ${iconX} ${iconY + iconSize*0.2}" fill="${textColor}" opacity="0.85"/>`;
+      // Small circle
+      svg += `<circle cx="${iconX + iconSize * 0.7}" cy="${iconY + iconSize * 0.5}" r="${iconSize * 0.2}" fill="${textColor}" opacity="0.85"/>`;
+    }
 
-  grid.innerHTML = illustrationHtml;
+    // RGB values at bottom
+    const rgbText = `R ${rgb.r}\nG ${rgb.g}\nB ${rgb.b}`;
+    const lines = rgbText.split('\n');
+    lines.forEach((line, lineIdx) => {
+      svg += `<text x="${xStart + blockW/2}" y="${280 + lineIdx * 25}" text-anchor="middle" font-family="'VT323',monospace" font-size="16" letter-spacing="1" fill="${textColor}" opacity="0.75">${line}</text>`;
+    });
+  });
+
+  svg += `</svg>`;
+
+  grid.innerHTML = `<div class="preview-illustration">${svg}</div>`;
 }
 
 function saveToHistory(tag) {
