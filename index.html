@@ -1053,6 +1053,85 @@ let history = [];
 let currentRandomSubtype = '';
 let lockedIndex = -1;
 
+// ── Adapt interface to palette colors ──
+function adaptInterfaceToPalette() {
+  if (currentPalette.length === 0) return;
+
+  const accentColor = currentPalette[Math.min(3, currentPalette.length - 1)].hex;
+  const baseColor = currentPalette[0].hex;
+  const secondaryColor = currentPalette[Math.min(2, currentPalette.length - 1)].hex;
+  const thirdColor = currentPalette[Math.min(4, currentPalette.length - 1)].hex;
+
+  const root = document.documentElement;
+  const accentLum = hexToHsl(accentColor)[2];
+  const paletteLum = (hexToHsl(baseColor)[2] + hexToHsl(secondaryColor)[2] + hexToHsl(thirdColor)[2]) / 3;
+
+  // Update CSS variables with palette colors
+  root.style.setProperty('--accent', accentColor);
+  root.style.setProperty('--glow', `rgba(${hexToRgb(accentColor).r},${hexToRgb(accentColor).g},${hexToRgb(accentColor).b},0.4)`);
+
+  // Adapt border color based on palette
+  const borderColor = paletteLum > 50 ?
+    `rgba(${hexToRgb(baseColor).r},${hexToRgb(baseColor).g},${hexToRgb(baseColor).b},0.2)` :
+    `rgba(${hexToRgb(secondaryColor).r},${hexToRgb(secondaryColor).g},${hexToRgb(secondaryColor).b},0.25)`;
+  root.style.setProperty('--border', borderColor);
+
+  // Update button styles
+  const btnGen = document.querySelector('.btn-gen');
+  const btnDl = document.querySelector('.btn-dl');
+
+  if (btnGen) {
+    btnGen.style.backgroundColor = accentColor;
+    btnGen.style.borderColor = accentColor;
+    btnGen.style.boxShadow = `0 0 20px rgba(${hexToRgb(accentColor).r},${hexToRgb(accentColor).g},${hexToRgb(accentColor).b},0.5)`;
+  }
+
+  if (btnDl) {
+    btnDl.style.borderColor = secondaryColor;
+    btnDl.style.color = secondaryColor;
+    btnDl.style.boxShadow = `0 0 14px rgba(${hexToRgb(secondaryColor).r},${hexToRgb(secondaryColor).g},${hexToRgb(secondaryColor).b},0.3)`;
+  }
+
+  // Update accent elements in page
+  document.querySelectorAll('.pip-type, .logo::after').forEach(el => {
+    el.style.color = accentColor;
+    el.style.textShadow = `0 0 16px rgba(${hexToRgb(accentColor).r},${hexToRgb(accentColor).g},${hexToRgb(accentColor).b},0.5)`;
+  });
+
+  // Update logo glow
+  const logo = document.querySelector('.logo');
+  if (logo) {
+    logo.style.textShadow = `0 0 30px rgba(${hexToRgb(accentColor).r},${hexToRgb(accentColor).g},${hexToRgb(accentColor).b},0.6), 0 0 60px rgba(${hexToRgb(accentColor).r},${hexToRgb(accentColor).g},${hexToRgb(accentColor).b},0.2)`;
+  }
+
+  // Update language button active state
+  document.querySelectorAll('.lang-btn.active').forEach(btn => {
+    btn.style.borderColor = secondaryColor;
+    btn.style.color = secondaryColor;
+    btn.style.backgroundColor = `rgba(${hexToRgb(secondaryColor).r},${hexToRgb(secondaryColor).g},${hexToRgb(secondaryColor).b},0.15)`;
+  });
+
+  // Update temperature button active states
+  document.querySelectorAll('.temp-btn.active').forEach(btn => {
+    const btnColor = btn.dataset.temp === 'any' ? accentColor : secondaryColor;
+    btn.style.borderColor = btnColor;
+    btn.style.color = btnColor;
+    btn.style.backgroundColor = `rgba(${hexToRgb(btnColor).r},${hexToRgb(btnColor).g},${hexToRgb(btnColor).b},0.1)`;
+    btn.style.boxShadow = `0 0 10px rgba(${hexToRgb(btnColor).r},${hexToRgb(btnColor).g},${hexToRgb(btnColor).b},0.3)`;
+  });
+
+  // Update social link colors
+  document.querySelectorAll('.social-link').forEach(link => {
+    link.style.borderColor = accentColor;
+    link.querySelector('svg').style.stroke = accentColor;
+  });
+
+  // Update background grid canvas if exists
+  if (document.getElementById('bgCanvas')) {
+    updateBackground();
+  }
+}
+
 function generate() {
   const type = document.getElementById('paletteType').value;
   const def = TYPES[type];
@@ -1128,6 +1207,7 @@ function generate() {
   renderPreview();
   saveToHistory(tag);
   updateBackground();
+  adaptInterfaceToPalette();
   document.getElementById('btnDownload').disabled = false;
 
   // Store stats for PNG export
