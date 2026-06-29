@@ -1239,37 +1239,58 @@ function renderPreview() {
   const p = currentPalette.map(c => c.hex);
   const grid = document.getElementById('previewGrid');
 
-  // Simple clean palette display with colors and info
-  const blockWidth = 100 / p.length;
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" style="width:100%;height:auto;">`;
-  svg += `<rect width="1000" height="300" fill="#0d0d0f"/>`;
+  let html = `<div style="background:#0d0d0f;padding:30px;border:1px solid var(--border);">`;
 
-  p.forEach((color, i) => {
-    const xStart = (i / p.length) * 1000;
-    const blockW = blockWidth / 100 * 1000;
-    const rgb = hexToRgb(color);
-    const textColor = contrastColor(color);
+  // Title
+  html += `<div style="color:#6a6478;font-family:'VT323',monospace;font-size:13px;letter-spacing:3px;margin-bottom:20px;text-transform:uppercase">// VISTA PREVIA //</div>`;
 
-    // Color block
-    svg += `<rect x="${xStart}" y="0" width="${blockW}" height="300" fill="${color}"/>`;
+  // Container
+  html += `<div style="display:flex;gap:15px;">`;
 
-    // Hex code
-    svg += `<text x="${xStart + blockW/2}" y="40" text-anchor="middle" font-family="'VT323',monospace" font-size="20" letter-spacing="1" fill="${textColor}" opacity="0.95">${color.toUpperCase()}</text>`;
+  // CARD 1 - Main background p[0]
+  html += `<div style="flex:1;background:${p[0]};padding:25px;border-radius:4px;display:flex;flex-direction:column;">`;
 
-    // Separator line
-    if (i < p.length - 1) {
-      svg += `<line x1="${xStart + blockW}" y1="0" x2="${xStart + blockW}" y2="300" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>`;
-    }
+  // Label with p[1]
+  html += `<div style="background:${p[1]};color:white;padding:6px 12px;font-size:11px;letter-spacing:2px;margin-bottom:15px;width:fit-content;font-family:'VT323',monospace;text-transform:uppercase">Sistema 01</div>`;
 
-    // RGB values
-    svg += `<text x="${xStart + blockW/2}" y="150" text-anchor="middle" font-family="'VT323',monospace" font-size="16" letter-spacing="1" fill="${textColor}" opacity="0.8">R ${rgb.r}</text>`;
-    svg += `<text x="${xStart + blockW/2}" y="175" text-anchor="middle" font-family="'VT323',monospace" font-size="16" letter-spacing="1" fill="${textColor}" opacity="0.8">G ${rgb.g}</text>`;
-    svg += `<text x="${xStart + blockW/2}" y="200" text-anchor="middle" font-family="'VT323',monospace" font-size="16" letter-spacing="1" fill="${textColor}" opacity="0.8">B ${rgb.b}</text>`;
-  });
+  // Title with p[2]
+  html += `<div style="color:${p[2]};font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;margin-bottom:12px;line-height:1">DISEÑO RETRO</div>`;
 
-  svg += `</svg>`;
+  // Description
+  html += `<div style="color:white;font-size:12px;line-height:1.6;margin-bottom:15px;font-family:'Space Mono'">Así se vería tu paleta en una interfaz. El acento crea jerarquía visual y guía la atención.</div>`;
 
-  grid.innerHTML = `<div class="preview-illustration">${svg}</div>`;
+  // Color swatches at bottom p[3], p[4]
+  html += `<div style="display:flex;gap:8px;margin-top:auto;">`;
+  html += `<div style="width:30px;height:30px;background:${p[3]};border-radius:3px;border:1px solid rgba(255,255,255,0.2)"></div>`;
+  html += `<div style="width:30px;height:30px;background:${p[4]};border-radius:3px;border:1px solid rgba(255,255,255,0.2)"></div>`;
+  html += `</div>`;
+
+  html += `</div>`;
+
+  // CARD 2 - Main background p[2]
+  html += `<div style="flex:1;background:${p[2]};padding:25px;border-radius:4px;display:flex;flex-direction:column;">`;
+
+  // Label with p[3]
+  html += `<div style="background:${p[3]};color:white;padding:6px 12px;font-size:11px;letter-spacing:2px;margin-bottom:15px;width:fit-content;font-family:'VT323',monospace;text-transform:uppercase">Póster · Editorial</div>`;
+
+  // Title with p[1]
+  html += `<div style="color:${p[1]};font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;margin-bottom:12px;line-height:1">ARTE Y COLOR</div>`;
+
+  // Description
+  html += `<div style="color:white;font-size:12px;line-height:1.6;margin-bottom:15px;font-family:'Space Mono'">Combinación sobre fondo acento. Ideal para posters, portadas y piezas con alto impacto visual.</div>`;
+
+  // Color swatches at bottom p[0], p[4]
+  html += `<div style="display:flex;gap:8px;margin-top:auto;">`;
+  html += `<div style="width:30px;height:30px;background:${p[0]};border-radius:3px;border:1px solid rgba(255,255,255,0.2)"></div>`;
+  html += `<div style="width:30px;height:30px;background:${p[4]};border-radius:3px;border:1px solid rgba(255,255,255,0.2)"></div>`;
+  html += `</div>`;
+
+  html += `</div>`;
+
+  html += `</div>`;
+  html += `</div>`;
+
+  grid.innerHTML = html;
 }
 
 function saveToHistory(tag) {
