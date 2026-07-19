@@ -471,9 +471,15 @@ button { font-family: inherit; }
   background: transparent;
   padding: 0;
   width: 130px;
-  transition: border-color 0.18s;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
 }
-.history-item:hover { border-color: rgba(255,255,255,0.32); }
+.history-item:hover {
+  border-color: rgba(255,255,255,0.32);
+  background: rgba(255,255,255,0.04);
+  transform: translateY(-2px);
+}
+.history-item .history-meta span:last-child { transition: transform 0.18s; }
+.history-item:hover .history-meta span:last-child { transform: translateX(3px); }
 .history-strip { display: flex; height: 40px; }
 .history-strip-swatch { flex: 1; }
 .history-meta {
@@ -1249,8 +1255,9 @@ function renderHistory() {
     grid.innerHTML = `<div class="history-empty">${L().historyEmpty}</div>`;
     return;
   }
+  const restoreHint = L().historyRestore || 'Restaurar esta paleta';
   grid.innerHTML = history.map((h, i) => `
-    <div class="history-item" onclick="loadHistory(${i})">
+    <div class="history-item" onclick="loadHistory(${i})" title="${restoreHint}">
       <div class="history-strip">
         ${h.colors.map(c => `<div class="history-strip-swatch" style="background:${c}"></div>`).join('')}
       </div>
@@ -1535,6 +1542,7 @@ const I18N = {
     toastHistoryCleared:'HISTORIAL LIMPIADO ✓', clearHistory:'✕ LIMPIAR',
     toastAllLocked:'TODOS LOS COLORES ESTÁN BLOQUEADOS',
     lockAll:'🔒 BLOQUEAR TODO', unlockAll:'🔓 DESBLOQUEAR TODO',
+    historyRestore:'Restaurar esta paleta',
     prevLabel1:'SISTEMA · UI',         prevTitle1:'DISEÑO & COLOR',   prevBtn1:'ACCIÓN PRIMARIA',
     prevDesc1:'Así se verían tus colores en una interfaz. El acento crea jerarquía visual y guía la atención.',
     prevLabel2:'PÓSTER · EDITORIAL',   prevTitle2:'ARTE Y COLOR',     prevBtn2:'VOL. I',
@@ -1582,6 +1590,7 @@ const I18N = {
     toastHistoryCleared:'HISTORY CLEARED ✓', clearHistory:'✕ CLEAR',
     toastAllLocked:'ALL COLORS ARE LOCKED',
     lockAll:'🔒 LOCK ALL', unlockAll:'🔓 UNLOCK ALL',
+    historyRestore:'Restore this palette',
     prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & COLOR',   prevBtn1:'PRIMARY ACTION',
     prevDesc1:'How your colors would look in an interface. The accent creates visual hierarchy and guides attention.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ART & COLOR',      prevBtn2:'VOL. I',
@@ -1629,6 +1638,7 @@ const I18N = {
     toastHistoryCleared:'HISTÓRICO LIMPO ✓', clearHistory:'✕ LIMPAR',
     toastAllLocked:'TODAS AS CORES ESTÃO BLOQUEADAS',
     lockAll:'🔒 BLOQUEAR TUDO', unlockAll:'🔓 DESBLOQUEAR TUDO',
+    historyRestore:'Restaurar esta paleta',
     prevLabel1:'SISTEMA · UI',         prevTitle1:'DESIGN & COR',     prevBtn1:'AÇÃO PRIMÁRIA',
     prevDesc1:'Como suas cores ficariam em uma interface. O acento cria hierarquia visual e guia a atenção.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ARTE E COR',       prevBtn2:'VOL. I',
@@ -1676,6 +1686,7 @@ const I18N = {
     toastHistoryCleared:'HISTORIQUE EFFACÉ ✓', clearHistory:'✕ EFFACER',
     toastAllLocked:'TOUTES LES COULEURS SONT VERROUILLÉES',
     lockAll:'🔒 TOUT VERROUILLER', unlockAll:'🔓 TOUT DÉVERROUILLER',
+    historyRestore:'Restaurer cette palette',
     prevLabel1:'SYSTÈME · UI',         prevTitle1:'DESIGN & COULEUR', prevBtn1:'ACTION PRINCIPALE',
     prevDesc1:'Voici à quoi ressembleraient vos couleurs dans une interface. L\'accent crée une hiérarchie visuelle.',
     prevLabel2:'AFFICHE · ÉDITORIAL',  prevTitle2:'ART & COULEUR',    prevBtn2:'VOL. I',
@@ -1723,6 +1734,7 @@ const I18N = {
     toastHistoryCleared:'VERLAUF GELÖSCHT ✓', clearHistory:'✕ LÖSCHEN',
     toastAllLocked:'ALLE FARBEN SIND GESPERRT',
     lockAll:'🔒 ALLE SPERREN', unlockAll:'🔓 ALLE ENTSPERREN',
+    historyRestore:'Diese Palette wiederherstellen',
     prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & FARBE',   prevBtn1:'HAUPTAKTION',
     prevDesc1:'So würden Ihre Farben in einer Oberfläche aussehen. Der Akzent schafft visuelle Hierarchie.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'KUNST & FARBE',    prevBtn2:'VOL. I',
@@ -1770,6 +1782,7 @@ const I18N = {
     toastHistoryCleared:'履歴を消去しました ✓', clearHistory:'✕ 消去',
     toastAllLocked:'すべての色がロックされています',
     lockAll:'🔒 すべてロック', unlockAll:'🔓 すべて解除',
+    historyRestore:'このパレットを復元',
     prevLabel1:'システム · UI',        prevTitle1:'デザイン & カラー', prevBtn1:'メインアクション',
     prevDesc1:'インターフェースでの色の見え方です。アクセントカラーが視覚的な階層を作り、注目を集めます。',
     prevLabel2:'ポスター · エディトリアル', prevTitle2:'アートとカラー', prevBtn2:'VOL. I',
