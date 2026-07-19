@@ -179,6 +179,18 @@ button { font-family: inherit; }
 }
 .btn-dl:hover { border-color: rgba(255,255,255,0.42); }
 .btn-dl:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+.btn-lockall {
+  width: 100%;
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--border2);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: .04em;
+  padding: 11px;
+}
+.btn-lockall:hover { border-color: rgba(255,255,255,0.42); color: var(--text); }
+.btn-lockall.all-locked { border-color: var(--text); color: var(--text); background: rgba(255,255,255,0.06); }
 
 .lang-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .lang-lbl { display: none; }
@@ -616,6 +628,7 @@ button { font-family: inherit; }
       <div class="actions">
         <button class="btn btn-gen" id="btnGenerate" onclick="generate()">▶ GENERAR</button>
         <button class="btn btn-dl" id="btnDownload" onclick="downloadPNG()" disabled>⬇ PNG</button>
+        <button class="btn btn-lockall" id="btnLockAll" onclick="toggleAllLocks()">🔒 BLOQUEAR TODO</button>
       </div>
 
       <div class="lang-row">
@@ -1111,6 +1124,7 @@ function generate() {
   `;
 
   renderSwatches();
+  updateLockAllBtn();
   renderPreview();
   saveToHistory(tag);
   document.getElementById('btnDownload').disabled = false;
@@ -1155,6 +1169,25 @@ function renderSwatches() {
 function toggleLock(i) {
   currentPalette[i].locked = !currentPalette[i].locked;
   renderSwatches();
+  updateLockAllBtn();
+}
+
+// Lock every color at once (or unlock every color if they are all locked).
+function toggleAllLocks() {
+  if (!currentPalette.length) return;
+  const lockAll = !currentPalette.every(c => c.locked);
+  currentPalette.forEach(c => { c.locked = lockAll; });
+  renderSwatches();
+  updateLockAllBtn();
+}
+
+function updateLockAllBtn() {
+  const btn = document.getElementById('btnLockAll');
+  if (!btn) return;
+  const l = L();
+  const allLocked = currentPalette.length > 0 && currentPalette.every(c => c.locked);
+  btn.classList.toggle('all-locked', allLocked);
+  btn.textContent = allLocked ? (l.unlockAll || '🔓 DESBLOQUEAR TODO') : (l.lockAll || '🔒 BLOQUEAR TODO');
 }
 
 function copySwatch(hex, el) {
@@ -1241,6 +1274,7 @@ function loadHistory(i) {
   currentPalette = h.colors.map(hex => ({ hex, locked: false }));
   document.getElementById('currentTypeTag').textContent = h.tag;
   renderSwatches();
+  updateLockAllBtn();
   renderPreview();
 }
 
@@ -1482,7 +1516,7 @@ const I18N = {
     subtitle: '// GENERADOR DE PALETAS //',
     generate: '▶ GENERAR', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ LIBRE', tempWarm: '🔥 CÁLIDA', tempCold: '❄ FRÍA', tempNeut: '⚖ NEUTRA', tempDark: '🌑 OSCURA',
-    kbHint: '<kbd>SPACE</kbd> nueva paleta &nbsp;·&nbsp; clic en swatch → copiar HEX &nbsp;·&nbsp; doble clic → bloquear',
+    kbHint: '<kbd>SPACE</kbd> nueva paleta &nbsp;·&nbsp; clic → copiar HEX &nbsp;·&nbsp; doble clic → bloquear &nbsp;·&nbsp; <kbd>A</kbd> bloquear todo',
     previewTitle: '// VISTA PREVIA //', historyTitle: '// HISTORIAL //',
     historyEmpty: 'LAS PALETAS GUARDADAS APARECERÁN AQUÍ...',
     statColors:'Colores', statHue:'Matiz base', statSat:'Saturación', statLum:'Luminosidad', statTemp:'Temperatura', statMood:'Mood', statSample:'Muestra',
@@ -1500,6 +1534,7 @@ const I18N = {
     toastCopied:'HEX COPIADO ✓', toastPng:'PNG DESCARGADO ✓',
     toastHistoryCleared:'HISTORIAL LIMPIADO ✓', clearHistory:'✕ LIMPIAR',
     toastAllLocked:'TODOS LOS COLORES ESTÁN BLOQUEADOS',
+    lockAll:'🔒 BLOQUEAR TODO', unlockAll:'🔓 DESBLOQUEAR TODO',
     prevLabel1:'SISTEMA · UI',         prevTitle1:'DISEÑO & COLOR',   prevBtn1:'ACCIÓN PRIMARIA',
     prevDesc1:'Así se verían tus colores en una interfaz. El acento crea jerarquía visual y guía la atención.',
     prevLabel2:'PÓSTER · EDITORIAL',   prevTitle2:'ARTE Y COLOR',     prevBtn2:'VOL. I',
@@ -1528,7 +1563,7 @@ const I18N = {
     subtitle: '// PALETTE GENERATOR //',
     generate: '▶ GENERATE', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ FREE', tempWarm: '🔥 WARM', tempCold: '❄ COOL', tempNeut: '⚖ NEUTRAL', tempDark: '🌑 DARK',
-    kbHint: '<kbd>SPACE</kbd> new palette &nbsp;·&nbsp; click swatch → copy HEX &nbsp;·&nbsp; double click → lock',
+    kbHint: '<kbd>SPACE</kbd> new palette &nbsp;·&nbsp; click → copy HEX &nbsp;·&nbsp; double click → lock &nbsp;·&nbsp; <kbd>A</kbd> lock all',
     previewTitle: '// PREVIEW //', historyTitle: '// HISTORY //',
     historyEmpty: 'SAVED PALETTES WILL APPEAR HERE...',
     statColors:'Colors', statHue:'Base Hue', statSat:'Saturation', statLum:'Luminosity', statTemp:'Temperature', statMood:'Mood', statSample:'Sample',
@@ -1546,6 +1581,7 @@ const I18N = {
     toastCopied:'HEX COPIED ✓', toastPng:'PNG DOWNLOADED ✓',
     toastHistoryCleared:'HISTORY CLEARED ✓', clearHistory:'✕ CLEAR',
     toastAllLocked:'ALL COLORS ARE LOCKED',
+    lockAll:'🔒 LOCK ALL', unlockAll:'🔓 UNLOCK ALL',
     prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & COLOR',   prevBtn1:'PRIMARY ACTION',
     prevDesc1:'How your colors would look in an interface. The accent creates visual hierarchy and guides attention.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ART & COLOR',      prevBtn2:'VOL. I',
@@ -1574,7 +1610,7 @@ const I18N = {
     subtitle: '// GERADOR DE PALETAS //',
     generate: '▶ GERAR', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ LIVRE', tempWarm: '🔥 QUENTE', tempCold: '❄ FRIA', tempNeut: '⚖ NEUTRA', tempDark: '🌑 ESCURA',
-    kbHint: '<kbd>SPACE</kbd> nova paleta &nbsp;·&nbsp; clique → copiar HEX &nbsp;·&nbsp; duplo clique → bloquear',
+    kbHint: '<kbd>SPACE</kbd> nova paleta &nbsp;·&nbsp; clique → copiar HEX &nbsp;·&nbsp; duplo clique → bloquear &nbsp;·&nbsp; <kbd>A</kbd> bloquear tudo',
     previewTitle: '// VISUALIZAÇÃO //', historyTitle: '// HISTÓRICO //',
     historyEmpty: 'AS PALETAS SALVAS APARECERÃO AQUI...',
     statColors:'Cores', statHue:'Matiz base', statSat:'Saturação', statLum:'Luminosidade', statTemp:'Temperatura', statMood:'Mood', statSample:'Amostra',
@@ -1592,6 +1628,7 @@ const I18N = {
     toastCopied:'HEX COPIADO ✓', toastPng:'PNG BAIXADO ✓',
     toastHistoryCleared:'HISTÓRICO LIMPO ✓', clearHistory:'✕ LIMPAR',
     toastAllLocked:'TODAS AS CORES ESTÃO BLOQUEADAS',
+    lockAll:'🔒 BLOQUEAR TUDO', unlockAll:'🔓 DESBLOQUEAR TUDO',
     prevLabel1:'SISTEMA · UI',         prevTitle1:'DESIGN & COR',     prevBtn1:'AÇÃO PRIMÁRIA',
     prevDesc1:'Como suas cores ficariam em uma interface. O acento cria hierarquia visual e guia a atenção.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ARTE E COR',       prevBtn2:'VOL. I',
@@ -1620,7 +1657,7 @@ const I18N = {
     subtitle: '// GÉNÉRATEUR DE PALETTES //',
     generate: '▶ GÉNÉRER', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ LIBRE', tempWarm: '🔥 CHAUDE', tempCold: '❄ FROIDE', tempNeut: '⚖ NEUTRE', tempDark: '🌑 SOMBRE',
-    kbHint: '<kbd>SPACE</kbd> nouvelle palette &nbsp;·&nbsp; clic → copier HEX &nbsp;·&nbsp; double clic → verrouiller',
+    kbHint: '<kbd>SPACE</kbd> nouvelle palette &nbsp;·&nbsp; clic → copier HEX &nbsp;·&nbsp; double clic → verrouiller &nbsp;·&nbsp; <kbd>A</kbd> tout verrouiller',
     previewTitle: '// APERÇU //', historyTitle: '// HISTORIQUE //',
     historyEmpty: 'LES PALETTES SAUVEGARDÉES APPARAÎTRONT ICI...',
     statColors:'Couleurs', statHue:'Teinte de base', statSat:'Saturation', statLum:'Luminosité', statTemp:'Température', statMood:'Ambiance', statSample:'Aperçu',
@@ -1638,6 +1675,7 @@ const I18N = {
     toastCopied:'HEX COPIÉ ✓', toastPng:'PNG TÉLÉCHARGÉ ✓',
     toastHistoryCleared:'HISTORIQUE EFFACÉ ✓', clearHistory:'✕ EFFACER',
     toastAllLocked:'TOUTES LES COULEURS SONT VERROUILLÉES',
+    lockAll:'🔒 TOUT VERROUILLER', unlockAll:'🔓 TOUT DÉVERROUILLER',
     prevLabel1:'SYSTÈME · UI',         prevTitle1:'DESIGN & COULEUR', prevBtn1:'ACTION PRINCIPALE',
     prevDesc1:'Voici à quoi ressembleraient vos couleurs dans une interface. L\'accent crée une hiérarchie visuelle.',
     prevLabel2:'AFFICHE · ÉDITORIAL',  prevTitle2:'ART & COULEUR',    prevBtn2:'VOL. I',
@@ -1666,7 +1704,7 @@ const I18N = {
     subtitle: '// PALETTEN-GENERATOR //',
     generate: '▶ GENERIEREN', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ FREI', tempWarm: '🔥 WARM', tempCold: '❄ KALT', tempNeut: '⚖ NEUTRAL', tempDark: '🌑 DUNKEL',
-    kbHint: '<kbd>SPACE</kbd> neue Palette &nbsp;·&nbsp; Klick → HEX kopieren &nbsp;·&nbsp; Doppelklick → sperren',
+    kbHint: '<kbd>SPACE</kbd> neue Palette &nbsp;·&nbsp; Klick → HEX kopieren &nbsp;·&nbsp; Doppelklick → sperren &nbsp;·&nbsp; <kbd>A</kbd> alle sperren',
     previewTitle: '// VORSCHAU //', historyTitle: '// VERLAUF //',
     historyEmpty: 'GESPEICHERTE PALETTEN ERSCHEINEN HIER...',
     statColors:'Farben', statHue:'Basis-Farbton', statSat:'Sättigung', statLum:'Helligkeit', statTemp:'Temperatur', statMood:'Stimmung', statSample:'Probe',
@@ -1684,6 +1722,7 @@ const I18N = {
     toastCopied:'HEX KOPIERT ✓', toastPng:'PNG HERUNTERGELADEN ✓',
     toastHistoryCleared:'VERLAUF GELÖSCHT ✓', clearHistory:'✕ LÖSCHEN',
     toastAllLocked:'ALLE FARBEN SIND GESPERRT',
+    lockAll:'🔒 ALLE SPERREN', unlockAll:'🔓 ALLE ENTSPERREN',
     prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & FARBE',   prevBtn1:'HAUPTAKTION',
     prevDesc1:'So würden Ihre Farben in einer Oberfläche aussehen. Der Akzent schafft visuelle Hierarchie.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'KUNST & FARBE',    prevBtn2:'VOL. I',
@@ -1712,7 +1751,7 @@ const I18N = {
     subtitle: '// パレットジェネレーター //',
     generate: '▶ 生成', download: '⬇ PNG', temp: '温度:',
     tempAny: '★ 自由', tempWarm: '🔥 暖色', tempCold: '❄ 寒色', tempNeut: '⚖ 中性', tempDark: '🌑 暗色',
-    kbHint: '<kbd>SPACE</kbd> 新パレット &nbsp;·&nbsp; クリック → HEXコピー &nbsp;·&nbsp; ダブル → 固定',
+    kbHint: '<kbd>SPACE</kbd> 新パレット &nbsp;·&nbsp; クリック → HEXコピー &nbsp;·&nbsp; ダブル → 固定 &nbsp;·&nbsp; <kbd>A</kbd> 全て固定',
     previewTitle: '// プレビュー //', historyTitle: '// 履歴 //',
     historyEmpty: '保存されたパレットがここに表示されます...',
     statColors:'色数', statHue:'基本色相', statSat:'彩度', statLum:'明度', statTemp:'温度感', statMood:'ムード', statSample:'サンプル',
@@ -1730,6 +1769,7 @@ const I18N = {
     toastCopied:'HEXコピー済み ✓', toastPng:'PNGダウンロード済み ✓',
     toastHistoryCleared:'履歴を消去しました ✓', clearHistory:'✕ 消去',
     toastAllLocked:'すべての色がロックされています',
+    lockAll:'🔒 すべてロック', unlockAll:'🔓 すべて解除',
     prevLabel1:'システム · UI',        prevTitle1:'デザイン & カラー', prevBtn1:'メインアクション',
     prevDesc1:'インターフェースでの色の見え方です。アクセントカラーが視覚的な階層を作り、注目を集めます。',
     prevLabel2:'ポスター · エディトリアル', prevTitle2:'アートとカラー', prevBtn2:'VOL. I',
@@ -1775,6 +1815,7 @@ function applyLangUI() {
   document.querySelector('.preview-title').textContent = l.previewTitle;
   document.querySelector('.history-title').textContent = l.historyTitle;
   document.getElementById('btnClearHistory').textContent = l.clearHistory;
+  updateLockAllBtn();
   renderHistory();
   const tempBtns = document.querySelectorAll('.temp-btn');
   [l.tempAny,l.tempWarm,l.tempCold,l.tempNeut,l.tempDark].forEach((txt,i)=>{ if(tempBtns[i]) tempBtns[i].textContent=txt; });
@@ -1791,6 +1832,7 @@ function applyLangUI() {
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'SELECT') return;
   if (e.code === 'Space') { e.preventDefault(); generate(); }
+  if (e.code === 'KeyA' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); toggleAllLocks(); }
 });
 
 // Init
