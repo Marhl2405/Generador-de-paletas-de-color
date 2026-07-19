@@ -1289,6 +1289,7 @@ function loadHistory(i) {
 function downloadPNG() {
   if (!currentPalette.length) return;
   const stats = window._paletteStats || {};
+  const l = L();
 
   const cols = currentPalette.length <= 3 ? currentPalette.length : Math.ceil(currentPalette.length / 2);
   const rows = Math.ceil(currentPalette.length / cols);
@@ -1343,11 +1344,11 @@ function downloadPNG() {
 
   // Stats row
   const statItems = [
-    ['MATIZ',        `${stats.avgHue || 0}°`],
-    ['SATURACIÓN',   `${stats.avgSat || 0}%`],
-    ['LUMINOSIDAD',  `${stats.avgLum || 0}%`],
-    ['TEMPERATURA',  (stats.warmCool || '—').replace(/[🔥❄⚖🌑]/gu, '').trim()],
-    ['MOOD',         stats.mood || '—'],
+    [l.statHue.toUpperCase(),  `${stats.avgHue || 0}°`],
+    [l.statSat.toUpperCase(),  `${stats.avgSat || 0}%`],
+    [l.statLum.toUpperCase(),  `${stats.avgLum || 0}%`],
+    [l.statTemp.toUpperCase(), (stats.warmCool || '—').replace(/[🔥❄⚖🌑]/gu, '').trim()],
+    [l.statMood.toUpperCase(), stats.mood || '—'],
   ];
 
   const statAreaW = W - PAD * 2;
@@ -1415,7 +1416,7 @@ function downloadPNG() {
   cx.textAlign = 'center';
   cx.font = '10px "JetBrains Mono", monospace';
   cx.fillStyle = '#5E5E66';
-  cx.fillText('CHROMATICA · GENERADOR DE PALETAS', W / 2, H - 14);
+  cx.fillText(l.footerText, W / 2, H - 14);
 
   // ── Download ──
   const link = document.createElement('a');
