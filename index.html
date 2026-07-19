@@ -1378,7 +1378,12 @@ function downloadPNG() {
 
   // ── Download ──
   const link = document.createElement('a');
-  link.download = `chromatica_${(stats.tag || 'paleta').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.png`;
+  const safeTag = (stats.tag || 'paleta')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // strip diacritics: á → a
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .toLowerCase() || 'paleta';
+  link.download = `chromatica_${safeTag}.png`;
   link.href = cv.toDataURL('image/png');
   document.body.appendChild(link);
   link.click();
