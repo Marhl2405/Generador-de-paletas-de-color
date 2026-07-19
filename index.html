@@ -1026,6 +1026,14 @@ function showToast(msg, ms = 1800) {
 function generate() {
   const type = document.getElementById('paletteType').value;
   const def = TYPES[type];
+
+  // If every color is locked, regenerating would just reproduce the same
+  // palette. Give the user feedback instead of silently doing nothing.
+  if (currentPalette.length && currentPalette.every(c => c.locked)) {
+    showToast(L().toastAllLocked);
+    return;
+  }
+
   const newColors = def.gen();
 
   // Preserve locked swatches
@@ -1476,6 +1484,7 @@ const I18N = {
     moodFn: (l,s) => l>70?'LUMINOSA':l<35?'OSCURA':s>70?'SATURADA':'BALANCEADA',
     toastCopied:'HEX COPIADO ✓', toastPng:'PNG DESCARGADO ✓',
     toastHistoryCleared:'HISTORIAL LIMPIADO ✓', clearHistory:'✕ LIMPIAR',
+    toastAllLocked:'TODOS LOS COLORES ESTÁN BLOQUEADOS',
     prevLabel1:'SISTEMA · UI',         prevTitle1:'DISEÑO & COLOR',   prevBtn1:'ACCIÓN PRIMARIA',
     prevDesc1:'Así se verían tus colores en una interfaz. El acento crea jerarquía visual y guía la atención.',
     prevLabel2:'PÓSTER · EDITORIAL',   prevTitle2:'ARTE Y COLOR',     prevBtn2:'VOL. I',
@@ -1521,6 +1530,7 @@ const I18N = {
     moodFn: (l,s) => l>70?'BRIGHT':l<35?'DARK':s>70?'SATURATED':'BALANCED',
     toastCopied:'HEX COPIED ✓', toastPng:'PNG DOWNLOADED ✓',
     toastHistoryCleared:'HISTORY CLEARED ✓', clearHistory:'✕ CLEAR',
+    toastAllLocked:'ALL COLORS ARE LOCKED',
     prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & COLOR',   prevBtn1:'PRIMARY ACTION',
     prevDesc1:'How your colors would look in an interface. The accent creates visual hierarchy and guides attention.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ART & COLOR',      prevBtn2:'VOL. I',
@@ -1566,6 +1576,7 @@ const I18N = {
     moodFn: (l,s) => l>70?'LUMINOSA':l<35?'ESCURA':s>70?'SATURADA':'EQUILIBRADA',
     toastCopied:'HEX COPIADO ✓', toastPng:'PNG BAIXADO ✓',
     toastHistoryCleared:'HISTÓRICO LIMPO ✓', clearHistory:'✕ LIMPAR',
+    toastAllLocked:'TODAS AS CORES ESTÃO BLOQUEADAS',
     prevLabel1:'SISTEMA · UI',         prevTitle1:'DESIGN & COR',     prevBtn1:'AÇÃO PRIMÁRIA',
     prevDesc1:'Como suas cores ficariam em uma interface. O acento cria hierarquia visual e guia a atenção.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ARTE E COR',       prevBtn2:'VOL. I',
@@ -1611,6 +1622,7 @@ const I18N = {
     moodFn: (l,s) => l>70?'LUMINEUSE':l<35?'SOMBRE':s>70?'SATURÉE':'ÉQUILIBRÉE',
     toastCopied:'HEX COPIÉ ✓', toastPng:'PNG TÉLÉCHARGÉ ✓',
     toastHistoryCleared:'HISTORIQUE EFFACÉ ✓', clearHistory:'✕ EFFACER',
+    toastAllLocked:'TOUTES LES COULEURS SONT VERROUILLÉES',
     prevLabel1:'SYSTÈME · UI',         prevTitle1:'DESIGN & COULEUR', prevBtn1:'ACTION PRINCIPALE',
     prevDesc1:'Voici à quoi ressembleraient vos couleurs dans une interface. L\'accent crée une hiérarchie visuelle.',
     prevLabel2:'AFFICHE · ÉDITORIAL',  prevTitle2:'ART & COULEUR',    prevBtn2:'VOL. I',
@@ -1656,6 +1668,7 @@ const I18N = {
     moodFn: (l,s) => l>70?'HELL':l<35?'DUNKEL':s>70?'GESÄTTIGT':'AUSGEWOGEN',
     toastCopied:'HEX KOPIERT ✓', toastPng:'PNG HERUNTERGELADEN ✓',
     toastHistoryCleared:'VERLAUF GELÖSCHT ✓', clearHistory:'✕ LÖSCHEN',
+    toastAllLocked:'ALLE FARBEN SIND GESPERRT',
     prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & FARBE',   prevBtn1:'HAUPTAKTION',
     prevDesc1:'So würden Ihre Farben in einer Oberfläche aussehen. Der Akzent schafft visuelle Hierarchie.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'KUNST & FARBE',    prevBtn2:'VOL. I',
@@ -1701,6 +1714,7 @@ const I18N = {
     moodFn: (l,s) => l>70?'明るい':l<35?'暗い':s>70?'鮮やか':'バランス良い',
     toastCopied:'HEXコピー済み ✓', toastPng:'PNGダウンロード済み ✓',
     toastHistoryCleared:'履歴を消去しました ✓', clearHistory:'✕ 消去',
+    toastAllLocked:'すべての色がロックされています',
     prevLabel1:'システム · UI',        prevTitle1:'デザイン & カラー', prevBtn1:'メインアクション',
     prevDesc1:'インターフェースでの色の見え方です。アクセントカラーが視覚的な階層を作り、注目を集めます。',
     prevLabel2:'ポスター · エディトリアル', prevTitle2:'アートとカラー', prevBtn2:'VOL. I',
