@@ -1079,7 +1079,15 @@ function generate() {
   document.getElementById('currentTypeTag').textContent = tag;
   document.getElementById('currentDesc').textContent = L().types[type]?.desc || def.desc;
 
-  // Build stats panel
+  renderPaletteUI(tag);
+  saveToHistory(tag);
+  document.getElementById('btnDownload').disabled = false;
+}
+
+// Re-renders the current palette's stats/swatches/preview from currentPalette
+// (used both after generating new colors and after a locale change, where the
+// colors must stay the same but their labels need to reflect the new language).
+function renderPaletteUI(tag) {
   const hslVals = currentPalette.map(c => hexToHsl(c.hex));
   const avgHue = Math.round(hslVals.reduce((a,v) => a+v[0], 0) / hslVals.length);
   const avgSat = Math.round(hslVals.reduce((a,v) => a+v[1], 0) / hslVals.length);
@@ -1132,11 +1140,25 @@ function generate() {
   renderSwatches();
   updateLockAllBtn();
   renderPreview();
-  saveToHistory(tag);
-  document.getElementById('btnDownload').disabled = false;
 
   // Store stats for PNG export
   window._paletteStats = { tag, avgHue, avgSat, avgLum, warmCool, mood };
+}
+
+// Re-localizes the currently displayed palette in place (same colors, no new
+// history entry) — used when the UI language changes.
+function refreshPaletteLocale() {
+  if (!currentPalette.length) return;
+  const type = document.getElementById('paletteType').value;
+  const def = TYPES[type];
+  const tag = type === 'random'
+    ? `${L().types.random?.label || 'RANDOM'} · ${L().types[currentRandomSubtype]?.label || currentRandomSubtype}`
+    : (L().types[type]?.label || def.label);
+
+  document.getElementById('currentTypeTag').textContent = tag;
+  document.getElementById('currentDesc').textContent = L().types[type]?.desc || def.desc;
+
+  renderPaletteUI(tag);
 }
 
 function renderSwatches() {
@@ -1819,7 +1841,7 @@ function setLang(lang) {
   currentLang = lang;
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
   applyLangUI();
-  if (currentPalette.length) generate();
+  refreshPaletteLocale();
 }
 
 function applyLangUI() {
