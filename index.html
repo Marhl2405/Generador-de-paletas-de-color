@@ -482,6 +482,29 @@ button { font-family: inherit; }
   letter-spacing: .04em;
   padding: 2px 0;
 }
+.history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.history-head .history-title { margin-bottom: 0; }
+.history-clear {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dim2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.history-clear:hover { border-color: rgba(255,255,255,0.42); color: var(--text); }
+.history-clear:disabled { opacity: 0.3; cursor: not-allowed; }
 
 /* ── TOAST ── */
 .copy-toast {
@@ -628,7 +651,10 @@ button { font-family: inherit; }
       </div>
 
       <div class="history-section">
-        <div class="history-title">// HISTORIAL //</div>
+        <div class="history-head">
+          <div class="history-title">// HISTORIAL //</div>
+          <button class="history-clear" id="btnClearHistory" onclick="clearHistory()" disabled>✕ LIMPIAR</button>
+        </div>
         <div class="history-grid" id="historyGrid">
           <div class="history-empty">LAS PALETAS GUARDADAS APARECERÁN AQUÍ...</div>
         </div>
@@ -989,6 +1015,14 @@ let history = [];
 let currentRandomSubtype = '';
 let lockedIndex = -1;
 
+function showToast(msg, ms = 1800) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove('show'), ms);
+}
+
 function generate() {
   const type = document.getElementById('paletteType').value;
   const def = TYPES[type];
@@ -1158,7 +1192,12 @@ function saveToHistory(tag) {
 
 function renderHistory() {
   const grid = document.getElementById('historyGrid');
-  if (!history.length) return;
+  const clearBtn = document.getElementById('btnClearHistory');
+  if (clearBtn) clearBtn.disabled = history.length === 0;
+  if (!history.length) {
+    grid.innerHTML = `<div class="history-empty">${L().historyEmpty}</div>`;
+    return;
+  }
   grid.innerHTML = history.map((h, i) => `
     <div class="history-item" onclick="loadHistory(${i})">
       <div class="history-strip">
@@ -1170,6 +1209,13 @@ function renderHistory() {
       </div>
     </div>
   `).join('');
+}
+
+function clearHistory() {
+  if (!history.length) return;
+  history = [];
+  renderHistory();
+  showToast(L().toastHistoryCleared || 'Historial limpiado');
 }
 
 function loadHistory(i) {
@@ -1429,6 +1475,7 @@ const I18N = {
     warmCoolFn: h => h<60||h>300 ? '🔥 CÁLIDA' : h>150&&h<270 ? '❄ FRÍA' : '⚖ NEUTRA',
     moodFn: (l,s) => l>70?'LUMINOSA':l<35?'OSCURA':s>70?'SATURADA':'BALANCEADA',
     toastCopied:'HEX COPIADO ✓', toastPng:'PNG DESCARGADO ✓',
+    toastHistoryCleared:'HISTORIAL LIMPIADO ✓', clearHistory:'✕ LIMPIAR',
     prevLabel1:'SISTEMA · UI',         prevTitle1:'DISEÑO & COLOR',   prevBtn1:'ACCIÓN PRIMARIA',
     prevDesc1:'Así se verían tus colores en una interfaz. El acento crea jerarquía visual y guía la atención.',
     prevLabel2:'PÓSTER · EDITORIAL',   prevTitle2:'ARTE Y COLOR',     prevBtn2:'VOL. I',
@@ -1473,6 +1520,7 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 WARM':h>150&&h<270?'❄ COOL':'⚖ NEUTRAL',
     moodFn: (l,s) => l>70?'BRIGHT':l<35?'DARK':s>70?'SATURATED':'BALANCED',
     toastCopied:'HEX COPIED ✓', toastPng:'PNG DOWNLOADED ✓',
+    toastHistoryCleared:'HISTORY CLEARED ✓', clearHistory:'✕ CLEAR',
     prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & COLOR',   prevBtn1:'PRIMARY ACTION',
     prevDesc1:'How your colors would look in an interface. The accent creates visual hierarchy and guides attention.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ART & COLOR',      prevBtn2:'VOL. I',
@@ -1517,6 +1565,7 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 QUENTE':h>150&&h<270?'❄ FRIA':'⚖ NEUTRA',
     moodFn: (l,s) => l>70?'LUMINOSA':l<35?'ESCURA':s>70?'SATURADA':'EQUILIBRADA',
     toastCopied:'HEX COPIADO ✓', toastPng:'PNG BAIXADO ✓',
+    toastHistoryCleared:'HISTÓRICO LIMPO ✓', clearHistory:'✕ LIMPAR',
     prevLabel1:'SISTEMA · UI',         prevTitle1:'DESIGN & COR',     prevBtn1:'AÇÃO PRIMÁRIA',
     prevDesc1:'Como suas cores ficariam em uma interface. O acento cria hierarquia visual e guia a atenção.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'ARTE E COR',       prevBtn2:'VOL. I',
@@ -1561,6 +1610,7 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 CHAUDE':h>150&&h<270?'❄ FROIDE':'⚖ NEUTRE',
     moodFn: (l,s) => l>70?'LUMINEUSE':l<35?'SOMBRE':s>70?'SATURÉE':'ÉQUILIBRÉE',
     toastCopied:'HEX COPIÉ ✓', toastPng:'PNG TÉLÉCHARGÉ ✓',
+    toastHistoryCleared:'HISTORIQUE EFFACÉ ✓', clearHistory:'✕ EFFACER',
     prevLabel1:'SYSTÈME · UI',         prevTitle1:'DESIGN & COULEUR', prevBtn1:'ACTION PRINCIPALE',
     prevDesc1:'Voici à quoi ressembleraient vos couleurs dans une interface. L\'accent crée une hiérarchie visuelle.',
     prevLabel2:'AFFICHE · ÉDITORIAL',  prevTitle2:'ART & COULEUR',    prevBtn2:'VOL. I',
@@ -1605,6 +1655,7 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 WARM':h>150&&h<270?'❄ KALT':'⚖ NEUTRAL',
     moodFn: (l,s) => l>70?'HELL':l<35?'DUNKEL':s>70?'GESÄTTIGT':'AUSGEWOGEN',
     toastCopied:'HEX KOPIERT ✓', toastPng:'PNG HERUNTERGELADEN ✓',
+    toastHistoryCleared:'VERLAUF GELÖSCHT ✓', clearHistory:'✕ LÖSCHEN',
     prevLabel1:'SYSTEM · UI',          prevTitle1:'DESIGN & FARBE',   prevBtn1:'HAUPTAKTION',
     prevDesc1:'So würden Ihre Farben in einer Oberfläche aussehen. Der Akzent schafft visuelle Hierarchie.',
     prevLabel2:'POSTER · EDITORIAL',   prevTitle2:'KUNST & FARBE',    prevBtn2:'VOL. I',
@@ -1649,6 +1700,7 @@ const I18N = {
     warmCoolFn: h => h<60||h>300?'🔥 暖色':h>150&&h<270?'❄ 寒色':'⚖ 中性',
     moodFn: (l,s) => l>70?'明るい':l<35?'暗い':s>70?'鮮やか':'バランス良い',
     toastCopied:'HEXコピー済み ✓', toastPng:'PNGダウンロード済み ✓',
+    toastHistoryCleared:'履歴を消去しました ✓', clearHistory:'✕ 消去',
     prevLabel1:'システム · UI',        prevTitle1:'デザイン & カラー', prevBtn1:'メインアクション',
     prevDesc1:'インターフェースでの色の見え方です。アクセントカラーが視覚的な階層を作り、注目を集めます。',
     prevLabel2:'ポスター · エディトリアル', prevTitle2:'アートとカラー', prevBtn2:'VOL. I',
@@ -1693,6 +1745,8 @@ function applyLangUI() {
   document.querySelector('.kb-hint').innerHTML = l.kbHint;
   document.querySelector('.preview-title').textContent = l.previewTitle;
   document.querySelector('.history-title').textContent = l.historyTitle;
+  document.getElementById('btnClearHistory').textContent = l.clearHistory;
+  renderHistory();
   const tempBtns = document.querySelectorAll('.temp-btn');
   [l.tempAny,l.tempWarm,l.tempCold,l.tempNeut,l.tempDark].forEach((txt,i)=>{ if(tempBtns[i]) tempBtns[i].textContent=txt; });
   const sel = document.getElementById('paletteType');
