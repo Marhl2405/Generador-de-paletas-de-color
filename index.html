@@ -721,6 +721,13 @@ function hexToRgb(hex) {
   return { r, g, b, str: `rgb(${r}, ${g}, ${b})` };
 }
 
+// Perceived luminance (sRGB) → true for light colors, so overlaid text
+// can switch to dark for adequate contrast.
+function isLightColor(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6;
+}
+
 function getColorName(hex) {
   const [h, s, l] = hexToHsl(hex);
   if (s < 8) {
@@ -1118,6 +1125,9 @@ function renderSwatches() {
     const rgb = hexToRgb(c.hex);
     const colorName = getColorName(c.hex);
     const [h, s, lv] = hexToHsl(c.hex);
+    const numStyle = isLightColor(c.hex)
+      ? ' style="color:#141416;opacity:0.85;text-shadow:0 1px 3px rgba(255,255,255,0.55)"'
+      : '';
     return `
     <div class="swatch${c.locked ? ' is-locked' : ''}"
          style="background:${c.hex}"
@@ -1125,7 +1135,7 @@ function renderSwatches() {
          ondblclick="toggleLock(${i})">
       <div class="swatch-inner">
         <div class="swatch-top">
-          <span class="swatch-num">${String(i+1).padStart(2,'0')}</span>
+          <span class="swatch-num"${numStyle}>${String(i+1).padStart(2,'0')}</span>
           <button class="swatch-lock" onclick="event.stopPropagation(); toggleLock(${i})">${c.locked ? '🔒' : '🔓'}</button>
         </div>
         <div class="swatch-bottom">
