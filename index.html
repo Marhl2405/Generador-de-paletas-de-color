@@ -1431,10 +1431,7 @@ function downloadPNG() {
   link.click();
   document.body.removeChild(link);
 
-  const t = document.getElementById('toast');
-  t.textContent = 'PNG DESCARGADO ✓';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  showToast(l.toastPng || 'PNG ✓', 2000);
 }
 
 // ── Temperature filter ──
