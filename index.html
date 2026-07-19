@@ -1521,6 +1521,7 @@ let currentLang = 'es';
 const I18N = {
   es: {
     subtitle: '// GENERADOR DE PALETAS //',
+    footerText: 'CHROMATICA · GENERADOR DE PALETAS',
     generate: '▶ GENERAR', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ LIBRE', tempWarm: '🔥 CÁLIDA', tempCold: '❄ FRÍA', tempNeut: '⚖ NEUTRA', tempDark: '🌑 OSCURA',
     kbHint: '<kbd>SPACE</kbd> nueva paleta &nbsp;·&nbsp; clic → copiar HEX &nbsp;·&nbsp; doble clic → bloquear &nbsp;·&nbsp; <kbd>A</kbd> bloquear todo',
@@ -1569,6 +1570,7 @@ const I18N = {
   },
   en: {
     subtitle: '// PALETTE GENERATOR //',
+    footerText: 'CHROMATICA · PALETTE GENERATOR',
     generate: '▶ GENERATE', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ FREE', tempWarm: '🔥 WARM', tempCold: '❄ COOL', tempNeut: '⚖ NEUTRAL', tempDark: '🌑 DARK',
     kbHint: '<kbd>SPACE</kbd> new palette &nbsp;·&nbsp; click → copy HEX &nbsp;·&nbsp; double click → lock &nbsp;·&nbsp; <kbd>A</kbd> lock all',
@@ -1617,6 +1619,7 @@ const I18N = {
   },
   pt: {
     subtitle: '// GERADOR DE PALETAS //',
+    footerText: 'CHROMATICA · GERADOR DE PALETAS',
     generate: '▶ GERAR', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ LIVRE', tempWarm: '🔥 QUENTE', tempCold: '❄ FRIA', tempNeut: '⚖ NEUTRA', tempDark: '🌑 ESCURA',
     kbHint: '<kbd>SPACE</kbd> nova paleta &nbsp;·&nbsp; clique → copiar HEX &nbsp;·&nbsp; duplo clique → bloquear &nbsp;·&nbsp; <kbd>A</kbd> bloquear tudo',
@@ -1665,6 +1668,7 @@ const I18N = {
   },
   fr: {
     subtitle: '// GÉNÉRATEUR DE PALETTES //',
+    footerText: 'CHROMATICA · GÉNÉRATEUR DE PALETTES',
     generate: '▶ GÉNÉRER', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ LIBRE', tempWarm: '🔥 CHAUDE', tempCold: '❄ FROIDE', tempNeut: '⚖ NEUTRE', tempDark: '🌑 SOMBRE',
     kbHint: '<kbd>SPACE</kbd> nouvelle palette &nbsp;·&nbsp; clic → copier HEX &nbsp;·&nbsp; double clic → verrouiller &nbsp;·&nbsp; <kbd>A</kbd> tout verrouiller',
@@ -1713,6 +1717,7 @@ const I18N = {
   },
   de: {
     subtitle: '// PALETTEN-GENERATOR //',
+    footerText: 'CHROMATICA · PALETTEN-GENERATOR',
     generate: '▶ GENERIEREN', download: '⬇ PNG', temp: 'TEMP:',
     tempAny: '★ FREI', tempWarm: '🔥 WARM', tempCold: '❄ KALT', tempNeut: '⚖ NEUTRAL', tempDark: '🌑 DUNKEL',
     kbHint: '<kbd>SPACE</kbd> neue Palette &nbsp;·&nbsp; Klick → HEX kopieren &nbsp;·&nbsp; Doppelklick → sperren &nbsp;·&nbsp; <kbd>A</kbd> alle sperren',
@@ -1761,6 +1766,7 @@ const I18N = {
   },
   ja: {
     subtitle: '// パレットジェネレーター //',
+    footerText: 'CHROMATICA · パレットジェネレーター',
     generate: '▶ 生成', download: '⬇ PNG', temp: '温度:',
     tempAny: '★ 自由', tempWarm: '🔥 暖色', tempCold: '❄ 寒色', tempNeut: '⚖ 中性', tempDark: '🌑 暗色',
     kbHint: '<kbd>SPACE</kbd> 新パレット &nbsp;·&nbsp; クリック → HEXコピー &nbsp;·&nbsp; ダブル → 固定 &nbsp;·&nbsp; <kbd>A</kbd> 全て固定',
@@ -1821,6 +1827,7 @@ function setLang(lang) {
 function applyLangUI() {
   const l = L();
   document.querySelector('.logo-sub').textContent = l.subtitle;
+  document.querySelector('.footer-text').textContent = l.footerText;
   document.getElementById('btnGenerate').textContent = l.generate;
   document.getElementById('btnDownload').textContent = l.download;
   document.querySelector('.temp-label').textContent = l.temp;
