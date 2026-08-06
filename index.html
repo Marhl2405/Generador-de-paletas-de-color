@@ -578,12 +578,59 @@ button { font-family: inherit; }
 .social-link svg { width: 17px; height: 17px; stroke: var(--dim); fill: none; stroke-width: 1.5; }
 .social-link:hover svg { stroke: #fff; }
 
+/* ── SIDEBAR PLEGABLE (solo móvil) ── */
+.sidebar-head { display: contents; }
+.sidebar-chevron { display: none; }
+.sidebar-body { display: flex; flex-direction: column; gap: 16px; }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 860px) {
   .page { padding: 12px; }
   .app-card { flex-direction: column; border-radius: 16px; }
-  .sidebar { width: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 18px; gap: 14px; }
+  .sidebar { width: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 18px; gap: 0; }
   .brand-name { font-size: 26px; }
+
+  .sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .sidebar-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border2);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--dim);
+    font-size: 13px;
+    cursor: pointer;
+    transition: transform 0.25s ease, border-color 0.15s, color 0.15s;
+  }
+  .sidebar-chevron:hover { border-color: rgba(255,255,255,0.42); color: var(--text); }
+  .sidebar:not(.collapsed) .sidebar-chevron { transform: rotate(180deg); }
+
+  .sidebar-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 16px;
+    max-height: 900px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.32s ease, opacity 0.22s ease, margin-top 0.32s ease;
+  }
+  .sidebar.collapsed .sidebar-body {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    pointer-events: none;
+  }
 
   .content-head { padding: 16px 16px 0; }
   .pip-type { font-size: 19px; }
@@ -641,63 +688,68 @@ button { font-family: inherit; }
 <div class="page">
   <div class="app-card">
 
-    <aside class="sidebar">
-      <div>
-        <div class="brand-name">CHROMATICA</div>
-        <div class="logo-sub">// GENERADOR DE PALETAS //</div>
-      </div>
-
-      <div class="field">
-        <span class="field-label">ARMONÍA</span>
-        <div class="select-wrap">
-          <select class="type-select" id="paletteType">
-            <option value="random">★ ALEATORIO</option>
-            <option value="monochromatic">MONOCROMÁTICA</option>
-            <option value="analogous">ANÁLOGA</option>
-            <option value="complementary">COMPLEMENTARIA</option>
-            <option value="split">SPLIT-COMPLEMENTARIA</option>
-            <option value="triadic">TRIADA</option>
-            <option value="tetradic">CUADRADA (TÉTRADA)</option>
-            <option value="square">CUADRADO EXACTO</option>
-            <option value="pastel">PASTEL</option>
-            <option value="neon">NEÓN</option>
-            <option value="earth">TIERRAS</option>
-            <option value="dark">OSCURA / SOMBRÍA</option>
-            <option value="vintage">VINTAGE</option>
-          </select>
-          <span class="chev">▼</span>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head" id="sidebarHead" onclick="toggleSidebar()">
+        <div>
+          <div class="brand-name">CHROMATICA</div>
+          <div class="logo-sub">// GENERADOR DE PALETAS //</div>
         </div>
+        <button class="sidebar-chevron" id="sidebarChevron" aria-label="Mostrar u ocultar opciones" onclick="event.stopPropagation(); toggleSidebar();">▾</button>
       </div>
 
-      <div class="field">
-        <span class="field-label temp-label">TEMP:</span>
-        <div class="temp-row">
-          <button class="temp-btn t-any active" data-temp="any"     onclick="setTemp('any')">★ LIBRE</button>
-          <button class="temp-btn t-warm"       data-temp="warm"    onclick="setTemp('warm')">🔥 CÁLIDA</button>
-          <button class="temp-btn t-cold"       data-temp="cold"    onclick="setTemp('cold')">❄ FRÍA</button>
-          <button class="temp-btn t-neut"       data-temp="neutral" onclick="setTemp('neutral')">⚖ NEUTRA</button>
-          <button class="temp-btn t-dark"       data-temp="dark2"   onclick="setTemp('dark2')">🌑 OSCURA</button>
+      <div class="sidebar-body" id="sidebarBody">
+        <div class="field">
+          <span class="field-label">ARMONÍA</span>
+          <div class="select-wrap">
+            <select class="type-select" id="paletteType">
+              <option value="random">★ ALEATORIO</option>
+              <option value="monochromatic">MONOCROMÁTICA</option>
+              <option value="analogous">ANÁLOGA</option>
+              <option value="complementary">COMPLEMENTARIA</option>
+              <option value="split">SPLIT-COMPLEMENTARIA</option>
+              <option value="triadic">TRIADA</option>
+              <option value="tetradic">CUADRADA (TÉTRADA)</option>
+              <option value="square">CUADRADO EXACTO</option>
+              <option value="pastel">PASTEL</option>
+              <option value="neon">NEÓN</option>
+              <option value="earth">TIERRAS</option>
+              <option value="dark">OSCURA / SOMBRÍA</option>
+              <option value="vintage">VINTAGE</option>
+            </select>
+            <span class="chev">▼</span>
+          </div>
         </div>
-      </div>
 
-      <div class="actions">
-        <button class="btn btn-gen" id="btnGenerate" onclick="generate()">▶ GENERAR</button>
-        <button class="btn btn-dl" id="btnDownload" onclick="downloadPNG()" disabled>⬇ PNG</button>
-        <button class="btn btn-lockall" id="btnLockAll" onclick="toggleAllLocks()">🔒 BLOQUEAR TODO</button>
-      </div>
+        <div class="field">
+          <span class="field-label temp-label">TEMP:</span>
+          <div class="temp-row">
+            <button class="temp-btn t-any active" data-temp="any"     onclick="setTemp('any')">★ LIBRE</button>
+            <button class="temp-btn t-warm"       data-temp="warm"    onclick="setTemp('warm')">🔥 CÁLIDA</button>
+            <button class="temp-btn t-cold"       data-temp="cold"    onclick="setTemp('cold')">❄ FRÍA</button>
+            <button class="temp-btn t-neut"       data-temp="neutral" onclick="setTemp('neutral')">⚖ NEUTRA</button>
+            <button class="temp-btn t-dark"       data-temp="dark2"   onclick="setTemp('dark2')">🌑 OSCURA</button>
+          </div>
+        </div>
 
-      <div class="lang-row">
-        <span class="lang-lbl" data-i18n="lang">LANG:</span>
-        <button class="lang-btn active" data-lang="es" onclick="setLang('es')">ES</button>
-        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
-        <button class="lang-btn" data-lang="pt" onclick="setLang('pt')">PT</button>
-        <button class="lang-btn" data-lang="fr" onclick="setLang('fr')">FR</button>
-        <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
-        <button class="lang-btn" data-lang="ja" onclick="setLang('ja')">日本</button>
-      </div>
+        <div class="actions">
+          <button class="btn btn-gen" id="btnGenerate" onclick="generate()">▶ GENERAR</button>
+          <button class="btn btn-dl" id="btnDownload" onclick="downloadPNG()" disabled>⬇ PNG</button>
+          <button class="btn btn-lockall" id="btnLockAll" onclick="toggleAllLocks()">🔒 BLOQUEAR TODO</button>
+        </div>
 
-      <div class="kb-hint">
-        <kbd>SPACE</kbd> nueva paleta &nbsp;·&nbsp; <kbd>L</kbd> bloquear color &nbsp;·&nbsp; clic en swatch → copiar HEX
+        <div class="lang-row">
+          <span class="lang-lbl" data-i18n="lang">LANG:</span>
+          <button class="lang-btn active" data-lang="es" onclick="setLang('es')">ES</button>
+          <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+          <button class="lang-btn" data-lang="pt" onclick="setLang('pt')">PT</button>
+          <button class="lang-btn" data-lang="fr" onclick="setLang('fr')">FR</button>
+          <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
+          <button class="lang-btn" data-lang="ja" onclick="setLang('ja')">日本</button>
+        </div>
+
+        <div class="kb-hint">
+          <kbd>SPACE</kbd> nueva paleta &nbsp;·&nbsp; <kbd>L</kbd> bloquear color &nbsp;·&nbsp; clic en swatch → copiar HEX
+        </div>
       </div>
     </aside>
 
@@ -1090,6 +1142,18 @@ let history = [];
 let currentRandomSubtype = '';
 let lockedIndex = -1;
 
+const MOBILE_BREAKPOINT = 860;
+
+function toggleSidebar(forceCollapsed) {
+  if (window.innerWidth > MOBILE_BREAKPOINT) return; // el menú plegable solo aplica en móvil
+  const sidebar = document.getElementById('sidebar');
+  if (typeof forceCollapsed === 'boolean') {
+    sidebar.classList.toggle('collapsed', forceCollapsed);
+  } else {
+    sidebar.classList.toggle('collapsed');
+  }
+}
+
 function showToast(msg, ms = 1800) {
   const toast = document.getElementById('toast');
   toast.textContent = msg;
@@ -1131,6 +1195,9 @@ function generate() {
   renderPaletteUI(tag);
   saveToHistory(tag);
   document.getElementById('btnDownload').disabled = false;
+
+  // En móvil, retraer el menú para mostrar la paleta recién generada
+  toggleSidebar(true);
 }
 
 // Re-renders the current palette's stats/swatches/preview from currentPalette
