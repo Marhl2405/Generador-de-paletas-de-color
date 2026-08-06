@@ -580,11 +580,60 @@ button { font-family: inherit; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 860px) {
-  .app-card { flex-direction: column; }
-  .sidebar { width: auto; border-right: none; border-bottom: 1px solid var(--border); }
-  .swatches { flex-direction: column; }
-  .swatch { height: 100px; flex: none !important; }
+  .page { padding: 12px; }
+  .app-card { flex-direction: column; border-radius: 16px; }
+  .sidebar { width: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 18px; gap: 14px; }
+  .brand-name { font-size: 26px; }
+
+  .content-head { padding: 16px 16px 0; }
+  .pip-type { font-size: 19px; }
+
+  .palette-info-panel { padding: 12px 16px; }
+  .pip-stats { gap: 7px; }
+  .pip-stat { padding: 7px 12px; }
+  .pip-stat-val { font-size: 18px; }
+  .stat-tooltip { left: auto; right: 0; width: 200px; }
+
+  .swatches { flex-direction: column; min-height: 0; }
+  .swatch { height: 92px; flex: none !important; }
   .swatch:hover { flex: none !important; }
+  /* sin hover en táctil: mostrar siempre nombre/valores del color */
+  .swatch-meta { opacity: 1; }
+  .swatch-lock { opacity: 1; }
+  .swatch-hex { font-size: 17px; }
+
+  .preview-section, .history-section { padding: 16px; }
+  .preview-grid { gap: 10px; }
+  .preview-card { min-width: 100%; }
+
+  .history-grid { gap: 8px; }
+  .history-item { width: calc(50% - 4px); }
+
+  .footer { flex-direction: column; gap: 10px; padding: 16px 0; }
+  .lang-row { justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .page { padding: 8px; }
+  .sidebar { padding: 14px; gap: 12px; }
+  .brand-name { font-size: 22px; }
+  .logo-sub { font-size: 9px; }
+
+  .type-select { font-size: 14px; padding: 12px 34px 12px 13px; }
+  .temp-btn { font-size: 13px; padding: 10px 13px; }
+  .btn-gen, .btn-dl, .btn-lockall { font-size: 14px; padding: 12px; }
+
+  .pip-type { font-size: 17px; }
+  .pip-desc { font-size: 12px; }
+  .pip-stat-lbl { font-size: 8.5px; }
+
+  .swatch { height: 78px; }
+  .swatch-inner { padding: 12px; }
+  .swatch-hex { font-size: 15px; }
+  .swatch-rgb, .swatch-hsl { font-size: 9px; }
+
+  .history-item { width: calc(50% - 4px); }
+  .kb-hint { display: none; }
 }
 </style>
 </head>
